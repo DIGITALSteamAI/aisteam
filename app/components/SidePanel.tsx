@@ -1,0 +1,124 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+export default function SidePanel() {
+  const pathname = usePathname();
+
+  const isActive = (route: string): boolean => {
+    if (route === "/dashboard") {
+      return pathname === "/" || pathname.startsWith("/dashboard");
+    }
+    return pathname.startsWith(route);
+  };
+
+  const linkClass = (active: boolean): string =>
+    active
+      ? "block px-3 py-2 rounded bg-slate-800 text-white transition"
+      : "block px-3 py-2 rounded text-white hover:bg-slate-700 transition";
+
+  const groupClass =
+    "mb-4 p-3 rounded bg-slate-800 bg-opacity-30 border border-slate-700";
+
+  const groupTitle =
+    "text-xs uppercase tracking-wider text-slate-400 mb-2 px-1";
+
+  return (
+    <aside className="w-60 bg-slate-900 text-white flex flex-col px-5 py-8">
+      <div className="mb-8 text-xl font-semibold tracking-wide">
+        AISTEAM
+      </div>
+
+      <nav className="flex flex-col gap-4 text-sm">
+
+        <div className={groupClass}>
+          <div className={groupTitle}>Work</div>
+
+          <Link
+            href="/dashboard"
+            className={linkClass(isActive("/dashboard"))}
+          >
+            Dashboard
+          </Link>
+
+          <Link
+            href="/projects"
+            className={linkClass(isActive("/projects"))}
+          >
+            Projects
+          </Link>
+
+          <Link
+            href="/tasks"
+            className={linkClass(isActive("/tasks"))}
+          >
+            Tasks
+          </Link>
+        </div>
+
+        <div className={groupClass}>
+          <div className={groupTitle}>Relationships</div>
+
+          <Link
+            href="/businesses"
+            className={linkClass(isActive("/businesses"))}
+          >
+            Businesses
+          </Link>
+
+          <Link
+            href="/contacts"
+            className={linkClass(isActive("/contacts"))}
+          >
+            Contacts
+          </Link>
+
+          <Link
+            href="/clients"
+            className={linkClass(isActive("/clients"))}
+          >
+            Clients
+          </Link>
+        </div>
+
+        <div className={groupClass}>
+          <div className={groupTitle}>Interactions</div>
+
+          <Link
+            href="/tickets"
+            className={linkClass(isActive("/tickets"))}
+          >
+            Tickets
+          </Link>
+
+          <Link
+            href="/profile"
+            className={linkClass(isActive("/profile"))}
+          >
+            Profile
+          </Link>
+        </div>
+
+        <div className={groupClass}>
+          <div className={groupTitle}>System</div>
+
+          <Link
+            href="/agents"
+            className={linkClass(isActive("/agents"))}
+          >
+            Agents
+          </Link>
+
+          <Link
+            href="/settings"
+            className={linkClass(isActive("/settings"))}
+          >
+            Settings
+          </Link>
+        </div>
+
+      </nav>
+    </aside>
+  );
+}

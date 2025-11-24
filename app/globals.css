@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* AISTEAM light dashboard colors */
+    --background: 214 32 percent 94 percent;       /* your light slate bg */
+    --foreground: 215 25 percent 15 percent;       /* slate-900 */
+
+    --card: 0 0 percent 100 percent;               /* white cards */
+    --card-foreground: 215 25 percent 15 percent;
+
+    --popover: 0 0 percent 100 percent;
+    --popover-foreground: 215 25 percent 15 percent;
+
+    --primary: 222 47 percent 11 percent;          /* deep slate for buttons */
+    --primary-foreground: 0 0 percent 100 percent; /* white text */
+
+    --secondary: 215 16 percent 47 percent;        /* slate-500 */
+    --secondary-foreground: 0 0 percent 100 percent;
+
+    --muted: 215 32 percent 85 percent;
+    --muted-foreground: 215 25 percent 30 percent;
+
+    --accent: 215 32 percent 85 percent;
+    --accent-foreground: 215 25 percent 15 percent;
+
+    --destructive: 0 72 percent 45 percent;
+    --destructive-foreground: 0 0 percent 100 percent;
+
+    --border: 215 20 percent 88 percent;
+    --input: 215 20 percent 88 percent;
+    --ring: 222 47 percent 11 percent;
+
+    --radius: 0.5rem;
+  }
+}
+
+/* Waveform animation */
+@keyframes wave {
+  0% {
+    transform: scaleY(0.4);
+  }
+  20% {
+    transform: scaleY(1);
+  }
+  40% {
+    transform: scaleY(0.4);
+  }
+  60% {
+    transform: scaleY(1);
+  }
+  80% {
+    transform: scaleY(0.4);
+  }
+  100% {
+    transform: scaleY(0.4);
+  }
+}
+
+.animate-wave {
+  animation: wave 1.2s ease-in-out infinite;
+  transform-origin: bottom;
+}
+
+/* Premium waveform animation */
+@keyframes premiumWave {
+  0 percent {
+    transform: scaleY(0.35);
+    opacity: 0.8;
+  }
+  25 percent {
+    transform: scaleY(1.2);
+    opacity: 1;
+  }
+  50 percent {
+    transform: scaleY(0.5);
+    opacity: 0.9;
+  }
+  75 percent {
+    transform: scaleY(1.4);
+    opacity: 1;
+  }
+  100 percent {
+    transform: scaleY(0.35);
+    opacity: 0.8;
+  }
+}
+
+.animate-premiumWave {
+  animation: premiumWave 1.6s cubic-bezier(0.55, 0.03, 0.51, 0.95) infinite;
+  transform-origin: bottom center;
+}
+
+/* Premium cinematic wave bars */
+.premium-bar {
+  width: 6px;
+  background: linear-gradient(to top, rgb(59 130 246), rgb(96 165 250));
+  border-radius: 9999px;
+  height: 60px;
+  animation: premiumCinematic 1.6s ease-in-out infinite;
+  transform-origin: bottom center;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+@keyframes premiumCinematic {
+  0% {
+    transform: scaleY(0.3) skewX(-3deg);
+    opacity: 0.7;
+  }
+  20% {
+    transform: scaleY(1.4) skewX(0deg);
+    opacity: 1;
+  }
+  40% {
+    transform: scaleY(0.5) skewX(2deg);
+    opacity: 0.8;
+  }
+  60% {
+    transform: scaleY(1.2) skewX(-1deg);
+    opacity: 1;
+  }
+  80% {
+    transform: scaleY(0.4) skewX(1deg);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scaleY(0.3) skewX(-2deg);
+    opacity: 0.7;
+  }
+}

@@ -1,0 +1,107 @@
+Folder PATH listing for volume Windows
+Volume serial number is 1AE2-9510
+C:\USERS\STEAM\AISTEAM\AISTEAM\APP
+¦   favicon.ico
+¦   globals.css
+¦   layout.tsx
+¦   page.tsx
+¦   
++---agents
+¦       page.tsx
+¦       
++---assistant
+¦   ¦   AssistantDockListener.tsx
+¦   ¦   AssistantHeaderPresence.tsx
+¦   ¦   AssistantPanel.tsx
+¦   ¦   AssistantProvider.tsx
+¦   ¦   Waveform.tsx
+¦   ¦   
+¦   +---managers
+¦   ¦       ClientSuccessLead.tsx
+¦   ¦       DeliveryLead.tsx
+¦   ¦       
+¦   +---shared
+¦   ¦       AgentChatContainer.tsx
+¦   ¦       AgentMessageBubble.tsx
+¦   ¦       Waveform.tsx
+¦   ¦       
+¦   +---supervisor
+¦   ¦       ChiefAIOfficer.tsx
+¦   ¦       
+¦   +---workers
+¦           CreativeSpecialist.tsx
+¦           GrowthSpecialist.tsx
+¦           TechSpecialist.tsx
+¦           WebEngineer.tsx
+¦           
++---assistantPopout
+¦       layout.tsx
+¦       page.tsx
+¦       
++---businesses
+¦       layout.tsx
+¦       page.tsx
+¦       
++---clients
+¦       layout.tsx
+¦       page.tsx
+¦       
++---components
+¦       PageHelpContent.ts
+¦       PageInfo.tsx
+¦       PageWrapper.tsx
+¦       SidePanel.tsx
+¦       TopBar.tsx
+¦       
++---contacts
+¦       layout.tsx
+¦       page.tsx
+¦       
++---dashboard
+¦       layout.tsx
+¦       page.tsx
+¦       
++---profile
+¦       layout.tsx
+¦       page.tsx
+¦       
++---projects
+¦   ¦   layout.tsx
+¦   ¦   mockProjects.ts
+¦   ¦   page.tsx
+¦   ¦   
+¦   +---modules
+¦   ¦   ¦   CmsBlockRouter.tsx
+¦   ¦   ¦   CmsIcon.tsx
+¦   ¦   ¦   ProjectForm.tsx
+¦   ¦   ¦   
+¦   ¦   +---generic
+¦   ¦   ¦       CmsBlock.tsx
+¦   ¦   ¦       
+¦   ¦   +---shopify
+¦   ¦   ¦       CmsBlock.tsx
+¦   ¦   ¦       
+¦   ¦   +---webflow
+¦   ¦   ¦       CmsBlock.tsx
+¦   ¦   ¦       
+¦   ¦   +---wordpress
+¦   ¦           CmsBlock.tsx
+¦   ¦           
+¦   +---[id]
+¦       ¦   page.tsx
+¦       ¦   
+¦       +---settings
+¦               page.tsx
+¦               
++---settings
+¦       layout.tsx
+¦       page.tsx
+¦       
++---tasks
+¦       layout.tsx
+¦       page.tsx
+¦       
++---tickets
+        layout.tsx
+        page.tsx
+        
