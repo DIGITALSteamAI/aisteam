@@ -164,7 +164,9 @@ export default function ChiefAIOfficerPanel({
     });
   };
 
-  const currentAgent = AGENTS[activeAgent || "chief"];
+  // Use a strongly typed key for the current agent
+  const currentAgentKey: AgentId = (activeAgent as AgentId) || "chief";
+  const currentAgent = AGENTS[currentAgentKey];
 
   const handleTaskPlanMock = (userText: string) => {
     setPanelStatus("thinking");
@@ -224,14 +226,16 @@ Notes: ${builderNotes || "None"}
 
     pushMessage("user", text);
 
-    if (activeAgent === "chief") {
+    const agentKey: AgentId = (activeAgent as AgentId) || "chief";
+
+    if (agentKey === "chief") {
       handleTaskPlanMock(text);
     } else {
-      const agentLabel = AGENTS[activeAgent].label;
+      const agentLabel = AGENTS[agentKey].label;
       pushMessage(
         "agent",
         `Noted. ${agentLabel} will use this in the current workflow.`,
-        activeAgent,
+        agentKey,
         "status"
       );
     }

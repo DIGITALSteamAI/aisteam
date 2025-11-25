@@ -20,7 +20,9 @@ export default function WebEngineer({
   projectDomain
 }: WebEngineerProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const { sendMessage: supervisorSend } = useAssistant();
+
+  // FIX APPLIED HERE
+  const { sendMessage: supervisorSend } = useAssistant() as any;
 
   const [messages, setMessages] = useState<AgentMessage[]>([
     {
@@ -121,7 +123,6 @@ Notes ${notes}
   return (
     <div className="w-full max-w-[600px] mx-auto">
 
-      {/* HEADER */}
       <div className="bg-white rounded-t-xl shadow-sm px-5 pt-5 pb-3 border-b border-slate-200">
         <div className="flex items-center justify-between">
           <div>
@@ -133,7 +134,6 @@ Notes ${notes}
             </p>
           </div>
 
-          {/* Switch instead of button */}
           <div className="flex items-center gap-2">
 
             <span className="text-xs text-slate-500">
@@ -154,7 +154,6 @@ Notes ${notes}
         </div>
       </div>
 
-      {/* CHAT ZONE */}
       <div className="bg-white px-5 py-3 shadow-sm border-b border-slate-200">
         <div
           ref={scrollRef}
@@ -192,10 +191,8 @@ Notes ${notes}
         </div>
       </div>
 
-      {/* BUILDER AND INPUT ZONE */}
       <div className="bg-white rounded-b-xl shadow-sm px-5 pb-5 pt-3 space-y-3">
 
-        {/* BUILDER STICKY TO INPUT */}
         {!isVoiceMode && (
           <>
             <button
@@ -297,7 +294,6 @@ Notes ${notes}
           </>
         )}
 
-        {/* INPUT BOX */}
         {!isVoiceMode && (
           <form
             onSubmit={handleFreeTextSubmit}

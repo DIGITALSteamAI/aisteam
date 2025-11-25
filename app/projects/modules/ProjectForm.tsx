@@ -9,8 +9,9 @@ type Props = {
 };
 
 export default function ProjectForm({ mode, project }: Props) {
+  // FIX: Ensure "type" is optional but safe
   const [name, setName] = useState(project?.name ?? "");
-  const [type, setType] = useState(project?.type ?? "");
+  const [type, setType] = useState((project as any)?.type ?? "");
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();

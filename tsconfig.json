@@ -13,6 +13,7 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
+    "baseUrl": ".",
     "plugins": [
       {
         "name": "next"
@@ -20,8 +21,8 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@assistant/*": ["app/assistant/*"],
-      "@supervisor/*": ["app/assistant/supervisor/*"]
+      "@assistant/*": ["./app/assistant/*"],
+      "@supervisor/*": ["./app/assistant/supervisor/*"]
     }
   },
   "include": [

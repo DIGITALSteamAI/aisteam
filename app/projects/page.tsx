@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 
 import PageWrapper from "../components/PageWrapper";
 import Link from "next/link";
@@ -10,9 +10,10 @@ export default function ProjectsPage() {
 
   return (
     <PageWrapper title="Projects" infoPage="projects">
-      {/* Filters + Add New */}
+
       <section className="bg-white rounded-xl shadow-sm p-5 mb-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
+
           <div className="flex flex-wrap gap-2">
             <button className="px-3 py-2 text-xs bg-slate-900 text-white rounded-full hover:bg-slate-800 transition">
               All
@@ -34,36 +35,29 @@ export default function ProjectsPage() {
         </div>
       </section>
 
-      {/* Projects Grid */}
       <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {projects.map(project => (
           <div
             key={project.id}
             className="relative bg-white rounded-xl shadow-sm p-5 flex flex-col gap-4"
           >
-            {/* CMS Badge */}
+
             <div className="absolute top-4 right-4 w-10 h-10 bg-white rounded-full shadow flex items-center justify-center">
-              <CmsIcon cmsType={project.cmsType} />
+              <CmsIcon cmsType={project.cmsType ?? ""} />
             </div>
 
-            {/* Project Info */}
             <div className="pr-12">
-              <h3 className="text-lg font-semibold text-slate-900">
-                {project.name}
-              </h3>
+              <h3 className="text-lg font-semibold text-slate-900">{project.name}</h3>
 
               <p className="text-sm text-slate-600">{project.domain}</p>
               <p className="text-sm text-slate-600">Client {project.client}</p>
 
               <div className="mt-2">
                 <p className="text-sm text-slate-800">Status {project.status}</p>
-                <p className="text-xs text-slate-500">
-                  Last updated {project.lastUpdate}
-                </p>
+                <p className="text-xs text-slate-500">Last updated {project.lastUpdate}</p>
               </div>
             </div>
 
-            {/* Actions */}
             <div className="flex gap-2">
               <Link
                 href={`/projects/${project.id}`}

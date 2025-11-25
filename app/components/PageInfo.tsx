@@ -2,12 +2,26 @@
 
 import { useState } from "react";
 import { Info } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
 import { pageHelp } from "./PageHelpContent";
 
-export default function PageInfo({ page }: { page: string }) {
+// Derive valid keys and entry type directly from pageHelp
+type PageKey = keyof typeof pageHelp;
+type PageHelpEntry = (typeof pageHelp)[PageKey];
+
+type PageInfoProps = {
+  page: PageKey;
+};
+
+export default function PageInfo({ page }: PageInfoProps) {
   const [open, setOpen] = useState(false);
-  const info = pageHelp[page];
+
+  const info: PageHelpEntry | undefined = pageHelp[page];
 
   if (!info) return null;
 
@@ -23,7 +37,6 @@ export default function PageInfo({ page }: { page: string }) {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="bg-white text-slate-900 border border-slate-300 shadow-xl">
-
           <DialogHeader>
             <DialogTitle>{info.title}</DialogTitle>
           </DialogHeader>
