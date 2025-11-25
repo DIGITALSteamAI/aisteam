@@ -75,7 +75,7 @@ const AGENTS: Record<AgentId, AgentConfig> = {
   tech: {
     id: "tech",
     label: "Tech Specialist",
-    role: "Systems and plug ins",
+    role: "Systems and tools",
     colorClass: "bg-slate-700",
     initials: "TS"
   },
@@ -92,6 +92,7 @@ export default function ChiefAIOfficerPanel({
   projectName,
   projectDomain
 }: ChiefAIOfficerProps) {
+
   const {
     isVoiceActive,
     status: assistantStatus,
@@ -122,6 +123,13 @@ export default function ChiefAIOfficerPanel({
 
   const builderReady =
     builderAction && builderTarget && builderIntent;
+
+  // FIX: Safe typed fallback
+  const agentKey: AgentId =
+    (activeAgent && AGENTS[activeAgent as AgentId] && activeAgent as AgentId) ||
+    "chief";
+
+  const currentAgent = AGENTS[agentKey];
 
   useEffect(() => {
     if (initialisedRef.current) return;
@@ -163,10 +171,6 @@ export default function ChiefAIOfficerPanel({
       kind
     });
   };
-
-  // Use a strongly typed key for the current agent
-  const currentAgentKey: AgentId = (activeAgent as AgentId) || "chief";
-  const currentAgent = AGENTS[currentAgentKey];
 
   const handleTaskPlanMock = (userText: string) => {
     setPanelStatus("thinking");
@@ -226,8 +230,6 @@ Notes: ${builderNotes || "None"}
 
     pushMessage("user", text);
 
-    const agentKey: AgentId = (activeAgent as AgentId) || "chief";
-
     if (agentKey === "chief") {
       handleTaskPlanMock(text);
     } else {
@@ -280,7 +282,7 @@ Notes: ${builderNotes || "None"}
 
   return (
     <div className="w-full h-full max-w-[600px] mx-auto flex flex-col">
-      
+
       <div className="bg-white rounded-t-xl shadow-sm px-5 pt-5 pb-3 border-b border-slate-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -361,7 +363,7 @@ Notes: ${builderNotes || "None"}
 
       <div className="bg-white rounded-b-xl shadow-sm px-5 pb-4 pt-3 space-y-3">
 
-        {!isVoiceActive && activeAgent === "chief" && (
+        {!isVoiceActive && agentKey === "chief" && (
           <>
             <button
               type="button"
@@ -491,7 +493,7 @@ Notes: ${builderNotes || "None"}
             className="flex items-center gap-2"
           >
             <input
-              className="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm"
+              className="flex-1 px-3 py-2 border targets" 
               value={input}
               onChange={e => setInput(e.target.value)}
               placeholder="Describe what you want to do"
@@ -544,12 +546,10 @@ Notes: ${builderNotes || "None"}
 
             <div className="text-xs text-slate-600 mb-4 space-y-1">
               <p>
-                Are you sure you want to close this task and reset
-                the conversation in this assistant panel?
+                Are you sure you want to close this task and reset the conversation in this assistant panel?
               </p>
               <p>
-                The current discussion will be cleared so you can
-                start a new request.
+                The current discussion will be cleared so you can start a new request.
               </p>
             </div>
 
