@@ -193,6 +193,12 @@ export default function ChiefAIOfficerPanel({
       ];
 
       // Call OpenAI API - Supervisor (chief) will route to appropriate agent
+      console.log("Calling OpenAI API with:", {
+        messagesCount: messagesForAPI.length,
+        agentId: agentKey,
+        projectContext: { projectName, projectDomain }
+      });
+
       const response = await fetch("/api/assistant/chat", {
         method: "POST",
         headers: {
@@ -208,20 +214,35 @@ export default function ChiefAIOfficerPanel({
         }),
       });
 
+      console.log("API Response status:", response.status, response.statusText);
+
       if (!response.ok) {
         // Try to get error details from response
         let errorMessage = `API error: ${response.status}`;
+        let errorDetails = "";
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorData.details || errorMessage;
-        } catch {
+          errorDetails = errorData.details || "";
+          console.error("API Error Response:", errorData);
+        } catch (parseErr) {
           // If response isn't JSON, use status text
+          const text = await response.text();
+          console.error("API Error Response (text):", text);
           errorMessage = `API error: ${response.status} ${response.statusText}`;
+          if (text) {
+            errorDetails = text.substring(0, 200); // First 200 chars
+          }
         }
-        throw new Error(errorMessage);
+        throw new Error(errorMessage + (errorDetails ? ` - ${errorDetails}` : ""));
       }
 
       const data = await response.json();
+      console.log("API Success Response:", { 
+        hasMessage: !!data.message, 
+        routedAgent: data.routedAgent,
+        messageLength: data.message?.length 
+      });
 
       // Check if the response contains an error
       if (data.error) {
@@ -245,16 +266,28 @@ export default function ChiefAIOfficerPanel({
       setPanelStatus("ready");
     } catch (err) {
       console.error("Error calling OpenAI:", err);
-      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      
+      // Log full error details for debugging
+      console.error("Full error details:", {
+        error: err,
+        message: errorMessage,
+        stack: err instanceof Error ? err.stack : undefined
+      });
       
       // Show more helpful error message
       let userFriendlyMessage = "I'm sorry, I encountered an error. Please try again.";
-      if (errorMessage.includes("OPENAI_API_KEY")) {
-        userFriendlyMessage = "OpenAI API key is not configured. Please check your environment variables.";
-      } else if (errorMessage.includes("API error: 500")) {
-        userFriendlyMessage = "The AI service encountered an error. Please try again in a moment.";
-      } else if (errorMessage.includes("API error: 400")) {
+      if (errorMessage.includes("OPENAI_API_KEY") || errorMessage.includes("API key")) {
+        userFriendlyMessage = "OpenAI API key is not configured. Please check your environment variables in Vercel.";
+      } else if (errorMessage.includes("API error: 500") || errorMessage.includes("500")) {
+        userFriendlyMessage = "The AI service encountered an error. Please check the server logs and try again.";
+      } else if (errorMessage.includes("API error: 400") || errorMessage.includes("400")) {
         userFriendlyMessage = "Invalid request. Please check your message and try again.";
+      } else if (errorMessage.includes("Failed to fetch") || errorMessage.includes("NetworkError")) {
+        userFriendlyMessage = "Network error. Please check your connection and try again.";
+      } else {
+        // Show the actual error message for debugging
+        userFriendlyMessage = `Error: ${errorMessage}. Please check the browser console for details.`;
       }
       
       pushMessage(
