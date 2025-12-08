@@ -179,7 +179,7 @@ export default function ChiefAIOfficerPanel({
 
     try {
       // Prepare messages for OpenAI (last 15 messages for better context)
-      const recentMessages = messages.slice(-15).map(msg => ({
+      const recentMessages = messages.slice(-15).map((msg: PanelMessage) => ({
         from: msg.from,
         text: msg.text,
         kind: msg.kind,
