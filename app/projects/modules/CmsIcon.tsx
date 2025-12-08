@@ -1,12 +1,14 @@
 import Image from "next/image";
 
 type Props = {
-  cmsType: string;
+  // Raw CMS type from DB like "WordPress" or "Shopify"
+  cmsType?: string;
+  // Optional direct icon path like "/icon-wordpress.png"
+  srcOverride?: string;
 };
 
-export default function CmsIcon({ cmsType }: Props) {
-  const type = (cmsType ?? "wordpress").toLowerCase();
-
+export default function CmsIcon({ cmsType, srcOverride }: Props) {
+  const type = (cmsType ?? "").toLowerCase().trim();
 
   const icons: Record<string, { src: string; alt: string }> = {
     wordpress: {
@@ -27,22 +29,24 @@ export default function CmsIcon({ cmsType }: Props) {
     }
   };
 
-  const icon = icons[type] ?? {
-    src: "/icon-generic.png",
-    alt: "Generic CMS"
-  };
+  let src = "/icon-generic.png";
+  let alt = "Generic CMS";
+
+  if (srcOverride && srcOverride.startsWith("/")) {
+    src = srcOverride;
+    alt = cmsType || alt;
+  } else if (type && icons[type]) {
+    src = icons[type].src;
+    alt = icons[type].alt;
+  }
 
   return (
-<Image
-  src={icon.src}
-  alt={icon.alt}
-  width={36}
-  height={36}
-  style={{ objectFit: "contain" }}
-/>
-
-
-
-
+    <Image
+      src={src}
+      alt={alt}
+      width={36}
+      height={36}
+      style={{ objectFit: "contain" }}
+    />
   );
 }

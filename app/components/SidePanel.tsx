@@ -8,9 +8,9 @@ export default function SidePanel() {
 
   const isActive = (route: string): boolean => {
     if (route === "/dashboard") {
-      return pathname === "/" || pathname.startsWith("/dashboard");
+      return pathname === "/" || pathname === route || pathname.startsWith(route + "/");
     }
-    return pathname.startsWith(route);
+    return pathname === route || pathname.startsWith(route + "/");
   };
 
   const linkClass = (active: boolean): string =>
@@ -26,95 +26,79 @@ export default function SidePanel() {
 
   return (
     <aside className="w-60 bg-slate-900 text-white flex flex-col px-5 py-8">
+
       <div className="mb-8 text-xl font-semibold tracking-wide">
         AISTEAM
       </div>
 
       <nav className="flex flex-col gap-4 text-sm">
 
+        {/* WORK */}
         <div className={groupClass}>
           <div className={groupTitle}>Work</div>
 
-          <Link
-            href="/dashboard"
-            className={linkClass(isActive("/dashboard"))}
-          >
+          <Link href="/dashboard" className={linkClass(isActive("/dashboard"))}>
             Dashboard
           </Link>
 
-          <Link
-            href="/projects"
-            className={linkClass(isActive("/projects"))}
-          >
+          <Link href="/projects" className={linkClass(isActive("/projects"))}>
             Projects
           </Link>
 
-          <Link
-            href="/tasks"
-            className={linkClass(isActive("/tasks"))}
-          >
+          <Link href="/tasks" className={linkClass(isActive("/tasks"))}>
             Tasks
           </Link>
         </div>
 
+        {/* RELATIONSHIPS */}
         <div className={groupClass}>
           <div className={groupTitle}>Relationships</div>
 
-          <Link
-            href="/businesses"
-            className={linkClass(isActive("/businesses"))}
-          >
+          <Link href="/businesses" className={linkClass(isActive("/businesses"))}>
             Businesses
           </Link>
 
-          <Link
-            href="/contacts"
-            className={linkClass(isActive("/contacts"))}
-          >
+          <Link href="/contacts" className={linkClass(isActive("/contacts"))}>
             Contacts
           </Link>
 
-          <Link
-            href="/clients"
-            className={linkClass(isActive("/clients"))}
-          >
+          <Link href="/clients" className={linkClass(isActive("/clients"))}>
             Clients
           </Link>
         </div>
 
+        {/* INTERACTIONS */}
         <div className={groupClass}>
           <div className={groupTitle}>Interactions</div>
 
-          <Link
-            href="/tickets"
-            className={linkClass(isActive("/tickets"))}
-          >
+          <Link href="/tickets" className={linkClass(isActive("/tickets"))}>
             Tickets
           </Link>
 
-          <Link
-            href="/profile"
-            className={linkClass(isActive("/profile"))}
-          >
+          <Link href="/profile" className={linkClass(isActive("/profile"))}>
             Profile
           </Link>
         </div>
 
+        {/* SYSTEM */}
         <div className={groupClass}>
           <div className={groupTitle}>System</div>
 
-          <Link
-            href="/agents"
-            className={linkClass(isActive("/agents"))}
-          >
+          <Link href="/agents" className={linkClass(isActive("/agents"))}>
             Agents
           </Link>
 
-          <Link
-            href="/settings"
-            className={linkClass(isActive("/settings"))}
-          >
+          <Link href="/settings" className={linkClass(isActive("/settings"))}>
             Settings
+          </Link>
+        </div>
+
+        {/* DOCUMENTATION - now last and styled identically */}
+        <div className={groupClass}>
+          <div className={groupTitle}>Documentation</div>
+
+          <Link href="/kb" className={linkClass(isActive("/kb"))}>
+            Dev Documentation
           </Link>
         </div>
 
