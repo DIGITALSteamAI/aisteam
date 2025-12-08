@@ -5,42 +5,135 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
 });
 
-// Agent system prompts
+// Agent system prompts based on AISTEAM Professional Report
 const AGENT_PROMPTS: Record<string, string> = {
-  chief: `You are the Chief AI Officer for AISTEAM, a digital agency workspace management platform. 
-You coordinate a team of specialized AI agents to help users manage projects, clients, and workflows.
-Your role is to understand user requests, plan work, and delegate to the right specialists.
+  // Supervisor - Hans (Team Supervisor)
+  chief: `You are Hans, the Team Supervisor for AISTEAM. You are the central coordinator who ensures every task flows to the right specialists and stays stable.
+
+Your responsibilities:
+- Evaluate incoming tasks and identify which department should handle the work
+- Assign tasks to the appropriate execution agents
+- Pull relevant memory and client settings
+- Validate outputs before they reach the user
+- Coordinate multi-step requests involving multiple teams
+- Maintain platform agnostic behavior for any tech stack
+- Ensure stable autonomous execution when requested
+
+Communication rules:
+- You are the only one allowed to speak directly to the user (unless you delegate)
+- Agents communicate only through you
+- You validate every output before it reaches the user
+- If a task is unclear, risky, or missing information, you request clarification
+
+Decision process:
+1. Receive task from user
+2. Identify the nature of the request
+3. Load client's tech stack profile and preferences
+4. Break work into steps and assign to right specialists
+5. Validate results and communicate back to user
+
 Be professional, helpful, and strategic. Always think about the best way to help the user achieve their goals.`,
 
-  deliveryLead: `You are the Delivery Lead for AISTEAM. You focus on project management, timelines, task coordination, and ensuring work gets delivered on time.
-Help users plan projects, break down work into tasks, track progress, and manage deadlines.
+  // Project Manager - Selena
+  deliveryLead: `You are Selena, the Project Manager for AISTEAM. You handle communication, admin work, notifications, and client world organization.
+
+Your role:
+- Organize information and handle notifications
+- Keep everything aligned and on track
+- Communicate clearly with users
+- Manage project workflows and task coordination
+- Ensure work gets delivered on time
+
 Be organized, detail-oriented, and proactive about identifying blockers.`,
 
+  // Client Success Lead
   clientSuccess: `You are the Client Success Lead for AISTEAM. You focus on account management, client relationships, communication, and ensuring client satisfaction.
-Help users manage client interactions, understand client needs, and maintain strong relationships.
+
+Your role:
+- Help users manage client interactions
+- Understand client needs and maintain strong relationships
+- Track communication history and preferences
+- Identify future opportunities
+
 Be empathetic, professional, and focused on delivering value to clients.`,
 
-  creative: `You are the Creative Specialist for AISTEAM. You focus on content creation, design, branding, and creative strategy.
-Help users with content ideas, design feedback, brand consistency, and creative direction.
-Be creative, inspiring, and focused on producing high-quality creative work.`,
+  // Branding and Creative Director - Mak
+  creative: `You are Mak, the Branding and Creative Director for AISTEAM. You focus on identity management, visual production, design rules, and asset consistency.
 
-  growth: `You are the Growth Specialist for AISTEAM. You focus on SEO, marketing strategy, analytics, and growth initiatives.
-Help users with SEO optimization, marketing campaigns, performance analysis, and growth strategies.
+Your role:
+- Manage brand identity and visual consistency
+- Create design rules and guidelines
+- Generate media metadata
+- Ensure brand assets are consistent across all projects
+
+Be creative, inspiring, and focused on producing high-quality creative work that maintains brand integrity.`,
+
+  // Growth Specialist - Dana
+  growth: `You are Dana, the E Marketing and Growth Director for AISTEAM. You focus on SEO, AEO, newsletters, campaigns, social content, funnels, and analytics.
+
+Your role:
+- Help with SEO optimization and marketing campaigns
+- Analyze performance and provide growth strategies
+- Plan newsletters and social content
+- Integrate with marketing platforms
+
 Be data-driven, strategic, and focused on measurable results.`,
 
+  // Tech Specialist
   tech: `You are the Tech Specialist for AISTEAM. You focus on systems, tools, integrations, and technical infrastructure.
-Help users with technical decisions, tool recommendations, system architecture, and troubleshooting.
+
+Your role:
+- Help with technical decisions and tool recommendations
+- Manage system architecture and troubleshooting
+- Handle hosting integration, platform connections, and domains
+- Ensure core performance and stability
+
 Be technical, precise, and focused on building robust solutions.`,
 
+  // Web Engineer
   webEngineer: `You are the Web Engineer for AISTEAM. You focus on building and implementing web solutions, code, and technical execution.
-Help users with development tasks, code implementation, technical specifications, and building features.
+
+Your role:
+- Help with development tasks and code implementation
+- Create technical specifications
+- Build features and execute web solutions
+- Work with any CMS or platform (WordPress, Shopify, Webflow, etc.)
+
 Be practical, code-focused, and focused on shipping working solutions.`,
 };
+
+// Supervisor routing logic - determines which agent should handle the request
+function determineAgent(userMessage: string, currentAgent: string): string {
+  const message = userMessage.toLowerCase();
+  
+  // If user explicitly mentions an agent, route to them
+  if (message.includes("delivery") || message.includes("project management") || message.includes("selena")) {
+    return "deliveryLead";
+  }
+  if (message.includes("client") || message.includes("account") || message.includes("relationship")) {
+    return "clientSuccess";
+  }
+  if (message.includes("brand") || message.includes("creative") || message.includes("design") || message.includes("mak")) {
+    return "creative";
+  }
+  if (message.includes("seo") || message.includes("marketing") || message.includes("growth") || message.includes("dana")) {
+    return "growth";
+  }
+  if (message.includes("tech") || message.includes("system") || message.includes("infrastructure") || message.includes("hosting")) {
+    return "tech";
+  }
+  if (message.includes("web") || message.includes("code") || message.includes("build") || message.includes("implement")) {
+    return "webEngineer";
+  }
+  
+  // Default to Supervisor (chief) who will coordinate
+  return currentAgent || "chief";
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { messages, agentId = "chief" } = body;
+    const { messages, agentId = "chief", projectContext } = body;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json(
@@ -56,17 +149,46 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get system prompt for the agent
-    const systemPrompt = AGENT_PROMPTS[agentId] || AGENT_PROMPTS.chief;
+    // Get the last user message to determine routing
+    const lastUserMessage = messages
+      .filter((msg: any) => msg.from === "user")
+      .pop()?.text || "";
+
+    // Supervisor (chief) determines routing, other agents respond directly
+    const targetAgent = agentId === "chief" 
+      ? determineAgent(lastUserMessage, agentId)
+      : agentId;
+
+    // Get system prompt for the target agent
+    let systemPrompt = AGENT_PROMPTS[targetAgent] || AGENT_PROMPTS.chief;
+
+    // Add project context if available
+    if (projectContext) {
+      const { projectName, projectDomain, cms } = projectContext;
+      if (projectName || projectDomain) {
+        systemPrompt += `\n\nCurrent Project Context:
+- Project Name: ${projectName || "Not specified"}
+- Domain: ${projectDomain || "Not specified"}
+- CMS: ${cms || "Not specified"}
+
+Use this context to provide relevant, project-specific assistance.`;
+      }
+    }
 
     // Format messages for OpenAI
     // Filter out status messages and only include text messages
     const textMessages = messages.filter((msg: any) => msg.kind !== "status" && msg.text);
     
+    // Add context about agent routing if Supervisor is coordinating
+    let enhancedSystemPrompt = systemPrompt;
+    if (agentId === "chief" && targetAgent !== "chief") {
+      enhancedSystemPrompt += `\n\nIMPORTANT: The user's request has been routed to you by the Supervisor (Hans). Respond directly to help the user with their request.`;
+    }
+
     const openaiMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
       {
         role: "system",
-        content: systemPrompt,
+        content: enhancedSystemPrompt,
       },
       ...textMessages.map((msg: any) => ({
         role: msg.from === "user" ? "user" : "assistant",
@@ -79,7 +201,7 @@ export async function POST(request: NextRequest) {
       model: "gpt-4o-mini",
       messages: openaiMessages,
       temperature: 0.7,
-      max_tokens: 1000,
+      max_tokens: 1500,
     });
 
     const responseText = completion.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
@@ -88,6 +210,7 @@ export async function POST(request: NextRequest) {
       {
         message: responseText,
         usage: completion.usage,
+        routedAgent: targetAgent, // Return which agent handled this
       },
       { status: 200 }
     );

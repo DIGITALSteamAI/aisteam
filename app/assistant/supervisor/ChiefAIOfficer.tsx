@@ -176,10 +176,11 @@ export default function ChiefAIOfficerPanel({
     setPanelStatus("thinking");
 
     try {
-      // Prepare messages for OpenAI (last 10 messages for context)
-      const recentMessages = messages.slice(-10).map(msg => ({
+      // Prepare messages for OpenAI (last 15 messages for better context)
+      const recentMessages = messages.slice(-15).map(msg => ({
         from: msg.from,
         text: msg.text,
+        kind: msg.kind,
       }));
 
       // Add the current user message
@@ -188,7 +189,7 @@ export default function ChiefAIOfficerPanel({
         { from: "user" as const, text: userText },
       ];
 
-      // Call OpenAI API
+      // Call OpenAI API - Supervisor (chief) will route to appropriate agent
       const response = await fetch("/api/assistant/chat", {
         method: "POST",
         headers: {
@@ -196,7 +197,11 @@ export default function ChiefAIOfficerPanel({
         },
         body: JSON.stringify({
           messages: messagesForAPI,
-          agentId: agentKey,
+          agentId: agentKey, // Current agent (Supervisor routes if needed)
+          projectContext: {
+            projectName,
+            projectDomain,
+          },
         }),
       });
 
@@ -206,11 +211,17 @@ export default function ChiefAIOfficerPanel({
 
       const data = await response.json();
 
+      // If Supervisor routed to a different agent, optionally switch UI
+      if (data.routedAgent && data.routedAgent !== agentKey && agentKey === "chief") {
+        // Supervisor routed to another agent - could switch UI here
+        // For now, we'll keep the response in the current view
+      }
+
       // Add AI response
       pushMessage(
         "agent",
         data.message || "I'm sorry, I couldn't generate a response.",
-        agentKey,
+        (data.routedAgent as AgentId) || agentKey,
         "text"
       );
 
