@@ -208,10 +208,24 @@ export default function ChiefAIOfficerPanel({
       });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        // Try to get error details from response
+        let errorMessage = `API error: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.details || errorMessage;
+        } catch {
+          // If response isn't JSON, use status text
+          errorMessage = `API error: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
+
+      // Check if the response contains an error
+      if (data.error) {
+        throw new Error(data.error + (data.details ? `: ${data.details}` : ""));
+      }
 
       // If Supervisor routed to a different agent, optionally switch UI
       if (data.routedAgent && data.routedAgent !== agentKey && agentKey === "chief") {
@@ -230,9 +244,21 @@ export default function ChiefAIOfficerPanel({
       setPanelStatus("ready");
     } catch (err) {
       console.error("Error calling OpenAI:", err);
+      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+      
+      // Show more helpful error message
+      let userFriendlyMessage = "I'm sorry, I encountered an error. Please try again.";
+      if (errorMessage.includes("OPENAI_API_KEY")) {
+        userFriendlyMessage = "OpenAI API key is not configured. Please check your environment variables.";
+      } else if (errorMessage.includes("API error: 500")) {
+        userFriendlyMessage = "The AI service encountered an error. Please try again in a moment.";
+      } else if (errorMessage.includes("API error: 400")) {
+        userFriendlyMessage = "Invalid request. Please check your message and try again.";
+      }
+      
       pushMessage(
         "agent",
-        "I'm sorry, I encountered an error. Please try again.",
+        userFriendlyMessage,
         agentKey,
         "text"
       );
