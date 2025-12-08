@@ -14,31 +14,35 @@ function getOpenAIClient() {
 // Agent system prompts based on AISTEAM Professional Report
 const AGENT_PROMPTS: Record<string, string> = {
   // Supervisor - Hans (Team Supervisor)
-  chief: `You are Hans, the Team Supervisor for AISTEAM. You are the central coordinator who ensures every task flows to the right specialists and stays stable.
+  chief: `You are Hans, the Team Supervisor for AISTEAM. You are the central coordinator who ensures every task flows to the right specialists and gets EXECUTED.
 
 Your responsibilities:
 - Evaluate incoming tasks and identify which department should handle the work
-- Assign tasks to the appropriate execution agents
+- Assign tasks to the appropriate EXECUTION agents (agents that actually perform tasks)
 - Pull relevant memory and client settings
 - Validate outputs before they reach the user
 - Coordinate multi-step requests involving multiple teams
 - Maintain platform agnostic behavior for any tech stack
-- Ensure stable autonomous execution when requested
+- Ensure stable autonomous EXECUTION when requested
+
+CRITICAL: Your agents are EXECUTION AGENTS - they actually perform tasks, not just provide guidance. When a user asks for something to be done, delegate to the appropriate agent who will EXECUTE it.
 
 Communication rules:
 - You are the only one allowed to speak directly to the user (unless you delegate)
 - Agents communicate only through you
 - You validate every output before it reaches the user
 - If a task is unclear, risky, or missing information, you request clarification
+- When delegating, make it clear the agent will EXECUTE the task
 
 Decision process:
 1. Receive task from user
 2. Identify the nature of the request
 3. Load client's tech stack profile and preferences
-4. Break work into steps and assign to right specialists
-5. Validate results and communicate back to user
+4. Break work into steps and assign to right EXECUTION specialists
+5. Agents EXECUTE the tasks (create pages, update content, etc.)
+6. Validate results and communicate back to user what was actually done
 
-Be professional, helpful, and strategic. Always think about the best way to help the user achieve their goals.`,
+Be professional, helpful, and strategic. Always think about the best way to help the user achieve their goals through actual task execution.`,
 
   // Project Manager - Selena
   deliveryLead: `You are Selena, the Project Manager for AISTEAM. You handle communication, admin work, notifications, and client world organization.
@@ -97,22 +101,39 @@ Your role:
 Be technical, precise, and focused on building robust solutions.`,
 
   // Web Engineer
-  webEngineer: `You are the Web Engineer for AISTEAM. You focus on building and implementing web solutions, code, and technical execution.
+  webEngineer: `You are the Web Engineer for AISTEAM. You are an EXECUTION AGENT - you actually perform tasks, not just provide guidance.
 
 Your role:
-- Help with development tasks and code implementation
-- Create technical specifications
-- Build features and execute web solutions
-- Work with any CMS or platform (WordPress, Shopify, Webflow, etc.)
+- EXECUTE development tasks and code implementation
+- Actually create pages, posts, products, and content on the CMS
+- Build features and implement web solutions directly
+- Work with any CMS or platform (WordPress, Shopify, Webflow, etc.) by executing API calls
 
-CRITICAL: Before asking the user for any information, check the project information provided to you. You should already know:
-- The CMS/platform being used
-- The project name and domain
-- Any project settings or configurations
+CRITICAL EXECUTION RULES:
+1. You EXECUTE tasks, you don't just tell users how to do them
+2. Before asking the user for any information, check the project information provided to you
+3. You should already know: CMS/platform, project name, domain, and settings
+4. Only ask for information that is truly missing and required to execute the task
+5. When a user requests something (like "add a new page"), you should:
+   - Use the project information to understand the CMS/platform
+   - Create a structured task plan
+   - Execute the task using available APIs/integrations
+   - Report back what was actually done
 
-Only ask for information that is truly missing and required to complete the specific task. Use the project information you have to provide specific, actionable guidance.
+EXECUTION WORKFLOW:
+- User: "I would like to add a new page to my website"
+- You: "I'll create a new page on your [CMS] site. What should the page title be and what content should it include?"
+- After getting details: Execute the task via API, then report: "I've created the page '[title]' on your site. It's now live at [URL]."
 
-Be practical, code-focused, and focused on shipping working solutions.`,
+You have access to task execution APIs. When you need to execute a task, respond with a JSON structure:
+{
+  "action": "execute_task",
+  "task_type": "create_page|update_content|create_post|etc",
+  "parameters": {...},
+  "message": "Brief message about what you're doing"
+}
+
+Be practical, execution-focused, and actually get things done.`,
 };
 
 // Type for incoming messages from the API
@@ -296,20 +317,96 @@ Use this context to provide relevant, project-specific assistance. Only ask for 
 
     // Call OpenAI (lazy initialization)
     const openai = getOpenAIClient();
+    
+    // Add function definitions for task execution
+    const functions = [
+      {
+        name: "execute_task",
+        description: "Execute a task on the CMS/platform. Use this when the user wants you to actually perform an action like creating a page, post, or updating content.",
+        parameters: {
+          type: "object",
+          properties: {
+            task_type: {
+              type: "string",
+              enum: ["create_page", "create_post", "update_content", "create_task"],
+              description: "The type of task to execute"
+            },
+            parameters: {
+              type: "object",
+              description: "Task-specific parameters (title, content, target, etc.)"
+            },
+            message: {
+              type: "string",
+              description: "Brief message explaining what you're executing"
+            }
+          },
+          required: ["task_type", "parameters", "message"]
+        }
+      }
+    ];
+
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: openaiMessages,
+      functions: functions,
+      function_call: "auto", // Let the model decide when to call functions
       temperature: 0.7,
       max_tokens: 1500,
     });
 
-    const responseText = completion.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
+    const message = completion.choices[0]?.message;
+    let responseText = message?.content || "";
+    let executedTask = null;
+
+    // Check if the model wants to execute a task
+    if (message?.function_call?.name === "execute_task") {
+      try {
+        const functionArgs = JSON.parse(message.function_call.arguments);
+        
+        // Execute the task
+        const executeResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/assistant/execute`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            taskType: functionArgs.task_type,
+            parameters: functionArgs.parameters,
+            projectId: projectContext?.projectId,
+            conversationId: null, // Could be passed from request if available
+          }),
+        });
+
+        const executeResult = await executeResponse.json();
+        executedTask = executeResult;
+
+        // Generate a follow-up message about what was executed
+        const followUpCompletion = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            ...openaiMessages,
+            message,
+            {
+              role: "function" as const,
+              name: "execute_task",
+              content: JSON.stringify(executeResult),
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 500,
+        });
+
+        responseText = followUpCompletion.choices[0]?.message?.content || functionArgs.message;
+      } catch (err: any) {
+        console.error("Task execution error:", err);
+        responseText = `I attempted to execute the task but encountered an error: ${err.message}. ${functionArgs?.message || ""}`;
+      }
+    }
 
     return NextResponse.json(
       {
         message: responseText,
         usage: completion.usage,
-        routedAgent: targetAgent, // Return which agent handled this
+        routedAgent: targetAgent,
+        executedTask, // Include task execution result if any
       },
       { status: 200 }
     );
