@@ -67,7 +67,7 @@ export async function GET(
         yearly: ["yearly", "yearly_prev"]
       };
 
-      const [curType, prevType] = table[trendMode] || [];
+      const [curType, prevType] = table[trendMode as keyof typeof table] || [];
 
       return {
         current: items.find(r => r.period_type === curType) || null,
