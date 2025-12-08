@@ -172,7 +172,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
 
         const timeout = setTimeout(async () => {
           try {
-            await fetch("/api/assistant/messages/add", {
+            const response = await fetch("/api/assistant/messages/add", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -183,6 +183,10 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
                 text: message.text,
               }),
             });
+            
+            if (!response.ok) {
+              console.warn("Failed to save message to database, continuing with local storage");
+            }
           } catch (err) {
             console.error("Error saving message to database:", err);
             // Continue without failing - local storage backup exists

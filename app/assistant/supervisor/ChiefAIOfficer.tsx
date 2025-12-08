@@ -137,13 +137,14 @@ export default function ChiefAIOfficerPanel({
     if (initialisedRef.current) return;
 
     if (!messages || messages.length === 0) {
+      // Add initial greeting message without saving to DB (conversation not created yet)
       addMessage({
         from: "agent",
         agentId: "chief",
         kind: "text",
         text:
           "Hello, I am your Chief AI Officer for this workspace. Tell me what you want to achieve and I will plan the work with the team."
-      });
+      }, false); // Don't save to DB yet - conversation will be created on first user message
     }
 
     initialisedRef.current = true;
@@ -323,10 +324,13 @@ Notes: ${builderNotes || "None"}
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
+    if (panelStatus === "thinking") return; // Prevent double submission
 
     const text = input.trim();
-    pushMessage("user", text);
     setInput("");
+    
+    // Add user message
+    await pushMessage("user", text);
 
     // Call OpenAI for all agents
     await handleAIChat(text);

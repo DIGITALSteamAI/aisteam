@@ -192,8 +192,17 @@ Use this context to provide relevant, project-specific assistance.`;
     // Format messages for OpenAI
     // Filter out status messages and only include text messages
     const textMessages = (messages as IncomingMessage[]).filter(
-      (msg) => msg.kind !== "status" && msg.text
+      (msg) => msg.kind !== "status" && msg.text && msg.text.trim().length > 0
     );
+    
+    // Ensure we have at least one user message
+    const hasUserMessage = textMessages.some(msg => msg.from === "user");
+    if (!hasUserMessage) {
+      return NextResponse.json(
+        { error: "At least one user message is required" },
+        { status: 400 }
+      );
+    }
     
     // Add context about agent routing if Supervisor is coordinating
     let enhancedSystemPrompt = systemPrompt;
