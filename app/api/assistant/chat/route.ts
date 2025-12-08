@@ -254,10 +254,22 @@ Use this context to provide relevant, project-specific assistance.`;
     );
   } catch (err: any) {
     console.error("OpenAI API error:", err);
+    console.error("Error stack:", err.stack);
+    console.error("Error details:", {
+      message: err.message,
+      name: err.name,
+      cause: err.cause,
+    });
+    
+    // Return more detailed error information
+    const errorMessage = err.message || String(err);
+    const errorDetails = err.details || err.cause || undefined;
+    
     return NextResponse.json(
       {
         error: "Failed to get AI response",
-        details: err.message || String(err),
+        details: errorMessage,
+        ...(errorDetails && { cause: errorDetails }),
       },
       { status: 500 }
     );
