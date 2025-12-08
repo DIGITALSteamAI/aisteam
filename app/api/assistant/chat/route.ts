@@ -357,11 +357,12 @@ Use this context to provide relevant, project-specific assistance. Only ask for 
     const message = completion.choices[0]?.message;
     let responseText = message?.content || "";
     let executedTask = null;
+    let functionArgs: any = null;
 
     // Check if the model wants to execute a task
     if (message?.function_call?.name === "execute_task") {
       try {
-        const functionArgs = JSON.parse(message.function_call.arguments);
+        functionArgs = JSON.parse(message.function_call.arguments);
         
         // Execute the task
         const executeResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/assistant/execute`, {
