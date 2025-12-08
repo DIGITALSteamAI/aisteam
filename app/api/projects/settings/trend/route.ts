@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-/* SERVICE CLIENT */
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { supabaseServer as supabase } from "@/lib/supabaseServer";
 
 export async function PATCH(request: NextRequest) {
   try {

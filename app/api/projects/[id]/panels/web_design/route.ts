@@ -1,21 +1,8 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseServer as supabase } from "@/lib/supabaseServer";
 
 export async function GET(request: Request, context: any) {
   const { id: projectId } = await context.params;
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseKey) {
-    console.error("Supabase env vars missing in web_design route");
-    return NextResponse.json(
-      { error: "Supabase is not configured correctly on the server" },
-      { status: 500 }
-    );
-  }
-
-  const supabase = createClient(supabaseUrl, supabaseKey);
 
   // Definitions
   const { data: definitions, error: defError } = await supabase
