@@ -50,7 +50,7 @@ export async function GET(
 
     // Period selector
     function pickPeriods(metricKey: string) {
-      const items = rows.filter(r => r.metric_key === metricKey);
+      const items = (rows || []).filter(r => r.metric_key === metricKey);
 
       const table = {
         yesterday: ["daily", "daily_prev"],
@@ -84,7 +84,7 @@ export async function GET(
     }
 
     // Build output
-    const metrics = definitions.map(def => {
+    const metrics = (definitions || []).map(def => {
       const key = def.metric_key;
       const isTopPages = key === "top_pages";
 
