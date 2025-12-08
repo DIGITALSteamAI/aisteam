@@ -185,15 +185,27 @@ Use this context to provide relevant, project-specific assistance.`;
       enhancedSystemPrompt += `\n\nIMPORTANT: The user's request has been routed to you by the Supervisor (Hans). Respond directly to help the user with their request.`;
     }
 
+    // Map messages with explicit types to avoid TypeScript union type issues
+    const mappedMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = textMessages.map((msg: any) => {
+      if (msg.from === "user") {
+        return {
+          role: "user" as const,
+          content: msg.text,
+        } as OpenAI.Chat.Completions.ChatCompletionUserMessageParam;
+      } else {
+        return {
+          role: "assistant" as const,
+          content: msg.text,
+        } as OpenAI.Chat.Completions.ChatCompletionAssistantMessageParam;
+      }
+    });
+
     const openaiMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
       {
         role: "system",
         content: enhancedSystemPrompt,
       },
-      ...textMessages.map((msg: any) => ({
-        role: msg.from === "user" ? "user" : "assistant",
-        content: msg.text,
-      })),
+      ...mappedMessages,
     ];
 
     // Call OpenAI

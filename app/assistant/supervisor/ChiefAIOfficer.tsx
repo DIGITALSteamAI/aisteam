@@ -101,6 +101,8 @@ export default function ChiefAIOfficerPanel({
     messages,
     addMessage,
     clearMessages,
+    conversationId,
+    closeConversation,
     setCurrentTask,
     setCurrentWorkflow,
     setFormPayload
@@ -158,18 +160,18 @@ export default function ChiefAIOfficerPanel({
     return () => window.clearTimeout(id);
   }, [messages, panelStatus, assistantStatus]);
 
-  const pushMessage = (
+  const pushMessage = async (
     from: MessageAuthor,
     text: string,
     agentId?: AgentId,
     kind: PanelMessage["kind"] = "text"
   ) => {
-    addMessage({
+    await addMessage({
       from,
       text,
       agentId,
       kind
-    });
+    }, true); // Save to database
   };
 
   const handleAIChat = async (userText: string) => {
@@ -238,16 +240,55 @@ export default function ChiefAIOfficerPanel({
     }
   };
 
-  const handleParsedTaskFromBuilder = () => {
+  const handleParsedTaskFromBuilder = async () => {
     if (!builderReady) return;
 
     const compiled = `
 Action: ${builderAction}
 Target: ${builderTarget}
 Intent: ${builderIntent}
-Priority: ${builderPriority || "Normal"}
+Priority: ${builderPriority || "medium"}
 Notes: ${builderNotes || "None"}
 `.trim();
+
+    // Create task in database
+    try {
+      const priorityMap: Record<string, string> = {
+        "Low": "low",
+        "Normal": "medium",
+        "High": "high",
+      };
+      const priority = priorityMap[builderPriority] || "medium";
+
+      const response = await fetch("/api/assistant/tasks/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          conversationId: conversationId || null,
+          action: builderAction,
+          target: builderTarget,
+          intent: builderIntent,
+          priority: priority,
+          notes: builderNotes || null,
+        }),
+      });
+
+      if (response.ok) {
+        const { task } = await response.json();
+        setCurrentTask(task.id);
+        
+        // Add a message about the task being created
+        await pushMessage(
+          "agent",
+          `Task created: ${builderAction} ${builderTarget} (${builderIntent})`,
+          "chief",
+          "text"
+        );
+      }
+    } catch (err) {
+      console.error("Error creating task:", err);
+      // Continue anyway - task builder still works without DB
+    }
 
     setInput(compiled);
     setOpenTaskBuilder(false);
@@ -270,8 +311,14 @@ Notes: ${builderNotes || "None"}
     setOpenTaskBuilder(prev => !prev);
   };
 
-  const handleConfirmCloseTask = () => {
-    clearMessages();
+  const handleConfirmCloseTask = async () => {
+    // Close conversation in database
+    if (conversationId) {
+      await closeConversation();
+    } else {
+      clearMessages();
+    }
+
     setActiveAgent("chief");
     setCurrentTask(null);
     setCurrentWorkflow(null);
