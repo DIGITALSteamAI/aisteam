@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+// Lazy initialization - only create client when actually needed (not during build)
+function getOpenAIClient() {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error("OPENAI_API_KEY environment variable is not set");
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+}
 
 // Agent system prompts based on AISTEAM Professional Report
 const AGENT_PROMPTS: Record<string, string> = {
@@ -218,7 +224,8 @@ Use this context to provide relevant, project-specific assistance.`;
       ...mappedMessages,
     ];
 
-    // Call OpenAI
+    // Call OpenAI (lazy initialization)
+    const openai = getOpenAIClient();
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: openaiMessages,
