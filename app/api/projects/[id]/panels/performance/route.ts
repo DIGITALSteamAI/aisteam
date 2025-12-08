@@ -41,6 +41,9 @@ export async function GET(
       .eq("panel_key", "performance")
       .order("sort_order", { ascending: true });
 
+    // Ensure definitions is never null
+    const safeDefinitions = definitions || [];
+
     // Load metric values
     const { data: rows } = await supabase
       .from("project_panel_metrics")
@@ -48,9 +51,12 @@ export async function GET(
       .eq("project_id", projectId)
       .eq("panel_key", "performance");
 
+    // Ensure rows is never null
+    const safeRows = rows || [];
+
     // Period selector
     function pickPeriods(metricKey: string) {
-      const items = (rows || []).filter(r => r.metric_key === metricKey);
+      const items = safeRows.filter(r => r.metric_key === metricKey);
 
       const table = {
         yesterday: ["daily", "daily_prev"],
@@ -84,7 +90,7 @@ export async function GET(
     }
 
     // Build output
-    const metrics = (definitions || []).map(def => {
+    const metrics = safeDefinitions.map(def => {
       const key = def.metric_key;
       const isTopPages = key === "top_pages";
 
