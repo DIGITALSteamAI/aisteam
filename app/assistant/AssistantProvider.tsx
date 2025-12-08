@@ -280,8 +280,17 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       if (!messagesResponse.ok) throw new Error("Failed to load messages");
       const { messages: dbMessages } = await messagesResponse.json();
 
+      // Type for database message format
+      type DbMessage = {
+        id: string;
+        author: string;
+        agent_id: string | null;
+        text: string;
+        kind: string | null;
+      };
+
       // Convert database messages to local format
-      const localMessages: AssistantMessage[] = dbMessages.map((msg: any) => ({
+      const localMessages: AssistantMessage[] = (dbMessages as DbMessage[]).map((msg) => ({
         id: msg.id,
         from: msg.author as "user" | "agent",
         agentId: msg.agent_id as AgentId | undefined,

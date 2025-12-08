@@ -14,7 +14,15 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Build update object
-    const updates: any = {
+    const updates: {
+      updated_at: string;
+      status?: string;
+      action?: string;
+      target?: string;
+      intent?: string;
+      priority?: string;
+      notes?: string | null;
+    } = {
       updated_at: new Date().toISOString(),
     };
 

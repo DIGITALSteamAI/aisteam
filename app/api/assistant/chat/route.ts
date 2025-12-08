@@ -102,6 +102,14 @@ Your role:
 Be practical, code-focused, and focused on shipping working solutions.`,
 };
 
+// Type for incoming messages from the API
+type IncomingMessage = {
+  from: "user" | "agent";
+  text: string;
+  kind?: "text" | "status" | "form";
+  agentId?: string;
+};
+
 // Supervisor routing logic - determines which agent should handle the request
 function determineAgent(userMessage: string, currentAgent: string): string {
   const message = userMessage.toLowerCase();
@@ -150,8 +158,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the last user message to determine routing
-    const lastUserMessage = messages
-      .filter((msg: any) => msg.from === "user")
+    const lastUserMessage = (messages as IncomingMessage[])
+      .filter((msg) => msg.from === "user")
       .pop()?.text || "";
 
     // Supervisor (chief) determines routing, other agents respond directly
@@ -177,7 +185,9 @@ Use this context to provide relevant, project-specific assistance.`;
 
     // Format messages for OpenAI
     // Filter out status messages and only include text messages
-    const textMessages = messages.filter((msg: any) => msg.kind !== "status" && msg.text);
+    const textMessages = (messages as IncomingMessage[]).filter(
+      (msg) => msg.kind !== "status" && msg.text
+    );
     
     // Add context about agent routing if Supervisor is coordinating
     let enhancedSystemPrompt = systemPrompt;
@@ -186,7 +196,7 @@ Use this context to provide relevant, project-specific assistance.`;
     }
 
     // Map messages with explicit types to avoid TypeScript union type issues
-    const mappedMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = textMessages.map((msg: any) => {
+    const mappedMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = textMessages.map((msg: IncomingMessage) => {
       if (msg.from === "user") {
         return {
           role: "user" as const,
