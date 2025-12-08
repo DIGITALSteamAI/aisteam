@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, FormEvent } from "react";
+import { usePathname, useParams } from "next/navigation";
 import { useAssistant } from "../AssistantProvider";
 import Waveform from "../Waveform";
 
@@ -92,6 +93,11 @@ export default function ChiefAIOfficerPanel({
   projectName,
   projectDomain
 }: ChiefAIOfficerProps) {
+  const pathname = usePathname();
+  const params = useParams();
+  
+  // Detect project ID from URL (e.g., /projects/[id]/...)
+  const projectId = params?.id as string | undefined;
 
   const {
     isVoiceActive,
@@ -196,7 +202,7 @@ export default function ChiefAIOfficerPanel({
       console.log("Calling OpenAI API with:", {
         messagesCount: messagesForAPI.length,
         agentId: agentKey,
-        projectContext: { projectName, projectDomain }
+        projectContext: { projectId, projectName, projectDomain }
       });
 
       const response = await fetch("/api/assistant/chat", {
@@ -208,6 +214,7 @@ export default function ChiefAIOfficerPanel({
           messages: messagesForAPI,
           agentId: agentKey, // Current agent (Supervisor routes if needed)
           projectContext: {
+            projectId, // Pass project ID so API can fetch full project data
             projectName,
             projectDomain,
           },

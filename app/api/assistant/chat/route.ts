@@ -105,6 +105,13 @@ Your role:
 - Build features and execute web solutions
 - Work with any CMS or platform (WordPress, Shopify, Webflow, etc.)
 
+CRITICAL: Before asking the user for any information, check the project information provided to you. You should already know:
+- The CMS/platform being used
+- The project name and domain
+- Any project settings or configurations
+
+Only ask for information that is truly missing and required to complete the specific task. Use the project information you have to provide specific, actionable guidance.
+
 Be practical, code-focused, and focused on shipping working solutions.`,
 };
 
@@ -176,17 +183,71 @@ export async function POST(request: NextRequest) {
     // Get system prompt for the target agent
     let systemPrompt = AGENT_PROMPTS[targetAgent] || AGENT_PROMPTS.chief;
 
-    // Add project context if available
-    if (projectContext) {
+    // Fetch full project information if projectId is provided
+    let projectData: any = null;
+    if (projectContext?.projectId) {
+      try {
+        const { supabaseServer } = await import("@/lib/supabaseServer");
+        const { data, error } = await supabaseServer
+          .from("projects")
+          .select("*")
+          .eq("id", projectContext.projectId)
+          .single();
+        
+        if (!error && data) {
+          projectData = data;
+        }
+      } catch (err) {
+        console.warn("Failed to fetch project data:", err);
+        // Continue without project data
+      }
+    }
+
+    // Build comprehensive project context
+    let projectContextText = "";
+    if (projectData) {
+      const projectInfo = {
+        name: projectData.name || projectContext?.projectName,
+        domain: projectData.domain || projectData.cms_url || projectContext?.projectDomain,
+        cms: projectData.cms || projectContext?.cms,
+        cmsUrl: projectData.cms_url,
+        customData: projectData.custom_data || {},
+      };
+
+      projectContextText = `\n\n=== CURRENT PROJECT INFORMATION ===
+You have access to the following project information. USE THIS INFORMATION - do not ask the user for information you already have:
+
+Project Name: ${projectInfo.name || "Not available"}
+Domain: ${projectInfo.domain || "Not available"}
+CMS Platform: ${projectInfo.cms || "Not available"}
+CMS URL: ${projectInfo.cmsUrl || "Not available"}`;
+
+      // Add custom settings if available
+      if (projectInfo.customData && Object.keys(projectInfo.customData).length > 0) {
+        projectContextText += `\n\nProject Settings (custom_data):\n${JSON.stringify(projectInfo.customData, null, 2)}`;
+      }
+
+      projectContextText += `\n\n=== IMPORTANT INSTRUCTIONS ===
+- DO NOT ask the user for information that is already provided above
+- Use the project information you have to provide specific, relevant assistance
+- Only ask for information that is truly missing and required to complete the task
+- Be proactive: use what you know to make suggestions and proceed with the task
+- If the user asks about something related to the project, reference the project information you have`;
+    } else if (projectContext) {
+      // Fallback to basic context if project data fetch failed
       const { projectName, projectDomain, cms } = projectContext;
       if (projectName || projectDomain) {
-        systemPrompt += `\n\nCurrent Project Context:
+        projectContextText = `\n\nCurrent Project Context:
 - Project Name: ${projectName || "Not specified"}
 - Domain: ${projectDomain || "Not specified"}
 - CMS: ${cms || "Not specified"}
 
-Use this context to provide relevant, project-specific assistance.`;
+Use this context to provide relevant, project-specific assistance. Only ask for information that is not already provided.`;
       }
+    }
+
+    if (projectContextText) {
+      systemPrompt += projectContextText;
     }
 
     // Format messages for OpenAI
