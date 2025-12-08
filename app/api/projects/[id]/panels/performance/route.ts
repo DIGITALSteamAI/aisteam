@@ -43,8 +43,8 @@ export async function GET(
       .eq("panel_key", "performance")
       .order("sort_order", { ascending: true });
 
-    // Ensure definitions is never null
-    const safeDefinitions = definitions || [];
+    // Ensure definitions is never null - explicit type assertion for TypeScript
+    const safeDefinitions: NonNullable<typeof definitions> = definitions ?? [];
 
     // Load metric values
     const { data: rows } = await supabase
@@ -53,8 +53,8 @@ export async function GET(
       .eq("project_id", projectId)
       .eq("panel_key", "performance");
 
-    // Ensure rows is never null
-    const safeRows = rows || [];
+    // Ensure rows is never null - explicit type assertion for TypeScript
+    const safeRows: NonNullable<typeof rows> = rows ?? [];
 
     // Period selector
     function pickPeriods(metricKey: string) {
