@@ -172,39 +172,59 @@ export default function ChiefAIOfficerPanel({
     });
   };
 
-  const handleTaskPlanMock = (userText: string) => {
+  const handleAIChat = async (userText: string) => {
     setPanelStatus("thinking");
 
-    const projectLabel =
-      projectName && projectDomain
-        ? `Project ${projectName} ${projectDomain}`
-        : "Current project";
+    try {
+      // Prepare messages for OpenAI (last 10 messages for context)
+      const recentMessages = messages.slice(-10).map(msg => ({
+        from: msg.from,
+        text: msg.text,
+      }));
 
-    pushMessage(
-      "agent",
-      `${projectLabel} request received. I will ask the Delivery Lead to prepare a short plan.`,
-      "chief",
-      "status"
-    );
+      // Add the current user message
+      const messagesForAPI = [
+        ...recentMessages,
+        { from: "user" as const, text: userText },
+      ];
 
-    setTimeout(() => {
-      setActiveAgent("deliveryLead");
+      // Call OpenAI API
+      const response = await fetch("/api/assistant/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: messagesForAPI,
+          agentId: agentKey,
+        }),
+      });
 
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Add AI response
       pushMessage(
         "agent",
-        "I am the Delivery Lead. Here is a first outline of how we can handle this request.",
-        "deliveryLead"
-      );
-
-      pushMessage(
-        "agent",
-        `Summary of your request: "${userText}"`,
-        "deliveryLead",
-        "status"
+        data.message || "I'm sorry, I couldn't generate a response.",
+        agentKey,
+        "text"
       );
 
       setPanelStatus("ready");
-    }, 500);
+    } catch (err) {
+      console.error("Error calling OpenAI:", err);
+      pushMessage(
+        "agent",
+        "I'm sorry, I encountered an error. Please try again.",
+        agentKey,
+        "text"
+      );
+      setPanelStatus("ready");
+    }
   };
 
   const handleParsedTaskFromBuilder = () => {
@@ -222,27 +242,16 @@ Notes: ${builderNotes || "None"}
     setOpenTaskBuilder(false);
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
 
     const text = input.trim();
-
     pushMessage("user", text);
-
-    if (agentKey === "chief") {
-      handleTaskPlanMock(text);
-    } else {
-      const agentLabel = AGENTS[agentKey].label;
-      pushMessage(
-        "agent",
-        `Noted. ${agentLabel} will use this in the current workflow.`,
-        agentKey,
-        "status"
-      );
-    }
-
     setInput("");
+
+    // Call OpenAI for all agents
+    await handleAIChat(text);
   };
 
   const toggleBuilder = () => {
