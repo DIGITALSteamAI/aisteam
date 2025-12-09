@@ -228,23 +228,38 @@ export default function ProjectDashboardPage() {
     );
   }
 
-  const domain = project.cms_url || project.domain || "(no domain)";
-  const cmsType = project.cms || project.cmsType || "";
+  const domain = project?.cms_url || project?.domain || "(no domain)";
+  const cmsType = project?.cms || project?.cmsType || "";
+  const projectName = project?.name || "Unknown Project";
+  const projectId = project?.id || id || "";
+
+  if (!projectId) {
+    return (
+      <PageWrapper title="Error">
+        <div className="bg-white border rounded-xl p-8">
+          <h1 className="text-2xl font-semibold mb-2">Invalid Project</h1>
+          <p className="text-sm text-slate-600">
+            Project ID is missing or invalid.
+          </p>
+        </div>
+      </PageWrapper>
+    );
+  }
 
   return (
-    <PageWrapper title={project.name}>
+    <PageWrapper title={projectName}>
       <section className="bg-white border rounded-xl p-6 mb-6">
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-xl font-semibold text-slate-900">
-              {project.name}
+              {projectName}
             </h1>
             <p className="text-sm text-slate-600">{domain}</p>
           </div>
 
           <div className="flex items-center gap-3">
             <Link
-              href={`/projects/${project.id}/settings`}
+              href={`/projects/${projectId}/settings`}
               className="px-3 py-1.5 text-sm rounded-md bg-slate-100 text-slate-700 hover:bg-slate-200"
             >
               Settings
@@ -262,10 +277,10 @@ export default function ProjectDashboardPage() {
         <BrandingPanel />
 
         {/* Web Design */}
-        <WebDesignPanel projectId={project.id} />
+        {projectId && <WebDesignPanel projectId={projectId} />}
 
         {/* Performances */}
-        <PerformancesPanel projectId={project.id} />
+        {projectId && <PerformancesPanel projectId={projectId} />}
 
         {/* Hosting */}
         <HostingPanel />
