@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useAssistant } from "./AssistantProvider";
 import ChiefAIOfficerPanel from "./supervisor/ChiefAIOfficer";
+import AgentSelector from "./components/AgentSelector";
 import PanelShimmer from "../components/PanelShimmer";
 
 export function AssistantPanel() {
@@ -61,63 +62,68 @@ export function AssistantPanel() {
 
       <aside
         className={[
-          "fixed top-0 right-0 h-full w-full max-w-xs sm:max-w-sm bg-white",
-          "border-l shadow-xl z-50 flex flex-col",
+          "fixed top-0 right-0 h-full w-full max-w-2xl bg-white",
+          "border-l shadow-xl z-50 flex",
           "transform transition-transform duration-300 ease-out",
           isOpen ? "translate-x-0" : "translate-x-full"
         ].join(" ")}
       >
-        
-        <header className="flex items-center justify-between px-4 py-3 border-b bg-slate-50">
-          <div>
-            <div className="text-sm font-semibold text-slate-900">
-              AISTEAM assistant
-            </div>
-            <div className="text-[11px] text-slate-500">
-              Chief AI Officer panel
-            </div>
-          </div>
+        {/* Agent Selector Sidebar */}
+        <AgentSelector />
 
-          <div className="flex items-center gap-2">
-            
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="flex items-center justify-between px-4 py-3 border-b bg-slate-50">
+            <div>
+              <div className="text-sm font-semibold text-slate-900">
+                AISTEAM assistant
+              </div>
+              <div className="text-[11px] text-slate-500">
+                Centralized agent panel
+              </div>
+            </div>
+
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500">
-                {isVoiceActive ? "Voice" : "Typing"}
-              </span>
+              
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-500">
+                  {isVoiceActive ? "Voice" : "Typing"}
+                </span>
 
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isVoiceActive}
-                  onChange={handleToggleMode}
-                  className="sr-only peer"
-                />
-                <div className="w-10 h-5 bg-slate-300 peer-focus:ring-2 rounded-full peer peer-checked:bg-blue-600 transition-all" />
-                <div className="absolute left-1 top-1 w-3.5 h-3.5 bg-white rounded-full transition-all peer-checked:translate-x-5" />
-              </label>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isVoiceActive}
+                    onChange={handleToggleMode}
+                    className="sr-only peer"
+                  />
+                  <div className="w-10 h-5 bg-slate-300 peer-focus:ring-2 rounded-full peer peer-checked:bg-blue-600 transition-all" />
+                  <div className="absolute left-1 top-1 w-3.5 h-3.5 bg-white rounded-full transition-all peer-checked:translate-x-5" />
+                </label>
+              </div>
+
+              <button
+                type="button"
+                onClick={handlePopout}
+                className="text-xs text-slate-500 hover:text-slate-800 px-2 py-1 rounded"
+              >
+                Pop out
+              </button>
+
+              <button
+                type="button"
+                onClick={closePanel}
+                className="text-xs text-slate-500 hover:text-slate-800 px-2 py-1 rounded"
+              >
+                Close
+              </button>
             </div>
+          </header>
 
-            <button
-              type="button"
-              onClick={handlePopout}
-              className="text-xs text-slate-500 hover:text-slate-800 px-2 py-1 rounded"
-            >
-              Pop out
-            </button>
-
-            <button
-              type="button"
-              onClick={closePanel}
-              className="text-xs text-slate-500 hover:text-slate-800 px-2 py-1 rounded"
-            >
-              Close
-            </button>
+          <div className="flex-1 overflow-hidden relative">
+            <ChiefAIOfficerPanel />
+            <PanelShimmer show={showShimmer} />
           </div>
-        </header>
-
-        <div className="flex-1 overflow-hidden relative">
-          <ChiefAIOfficerPanel />
-          <PanelShimmer show={showShimmer} />
         </div>
       </aside>
     </>

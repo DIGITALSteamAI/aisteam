@@ -16,9 +16,9 @@ type AgentId =
   | "chief"
   | "deliveryLead"
   | "clientSuccess"
-  | "creative"
-  | "growth"
-  | "tech"
+  | "creativeLead"
+  | "growthLead"
+  | "technicalLead"
   | "webEngineer";
 
 type AssistantMessage = {

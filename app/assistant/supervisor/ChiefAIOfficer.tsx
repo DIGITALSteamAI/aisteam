@@ -9,9 +9,9 @@ type AgentId =
   | "chief"
   | "deliveryLead"
   | "clientSuccess"
-  | "creative"
-  | "growth"
-  | "tech"
+  | "creativeLead"
+  | "growthLead"
+  | "technicalLead"
   | "webEngineer";
 
 type MessageAuthor = "user" | "agent";
@@ -41,49 +41,49 @@ const AGENTS: Record<AgentId, AgentConfig> = {
   chief: {
     id: "chief",
     label: "Chief AI Officer",
-    role: "Supervisor",
+    role: "Supervisor - Primary coordinator",
     colorClass: "bg-indigo-600",
     initials: "CA"
   },
   deliveryLead: {
     id: "deliveryLead",
     label: "Delivery Lead",
-    role: "Project management",
+    role: "Project management and coordination",
     colorClass: "bg-emerald-600",
     initials: "DL"
   },
   clientSuccess: {
     id: "clientSuccess",
     label: "Client Success Lead",
-    role: "Account management",
+    role: "Client relationships and goals",
     colorClass: "bg-amber-600",
     initials: "CS"
   },
-  creative: {
-    id: "creative",
-    label: "Creative Specialist",
-    role: "Content and design",
+  creativeLead: {
+    id: "creativeLead",
+    label: "Creative Lead",
+    role: "Brand voice and visual identity",
     colorClass: "bg-pink-600",
-    initials: "CR"
+    initials: "CL"
   },
-  growth: {
-    id: "growth",
-    label: "Growth Specialist",
-    role: "SEO and strategy",
+  growthLead: {
+    id: "growthLead",
+    label: "Growth Lead",
+    role: "Traffic, leads, and revenue",
     colorClass: "bg-sky-600",
-    initials: "GR"
+    initials: "GL"
   },
-  tech: {
-    id: "tech",
-    label: "Tech Specialist",
-    role: "Systems and tools",
+  technicalLead: {
+    id: "technicalLead",
+    label: "Technical Lead",
+    role: "Architecture and integrations",
     colorClass: "bg-slate-700",
-    initials: "TS"
+    initials: "TL"
   },
   webEngineer: {
     id: "webEngineer",
     label: "Web Engineer",
-    role: "Build and implementation",
+    role: "Web and CMS execution",
     colorClass: "bg-fuchsia-700",
     initials: "WE"
   }
@@ -256,17 +256,24 @@ export default function ChiefAIOfficerPanel({
         throw new Error(data.error + (data.details ? `: ${data.details}` : ""));
       }
 
-      // If Supervisor routed to a different agent, optionally switch UI
-      if (data.routedAgent && data.routedAgent !== agentKey && agentKey === "chief") {
-        // Supervisor routed to another agent - could switch UI here
-        // For now, we'll keep the response in the current view
+      // If Supervisor routed to a different agent, show routing decision
+      const routedAgent = (data.routedAgent as AgentId) || agentKey;
+      if (routedAgent !== agentKey && agentKey === "chief") {
+        // Supervisor routed to another agent - show routing info
+        const routedAgentConfig = AGENTS[routedAgent] || AGENTS.chief;
+        await pushMessage(
+          "agent",
+          `[Routed to ${routedAgentConfig.label}]`,
+          "chief",
+          "status"
+        );
       }
 
       // Add AI response
       pushMessage(
         "agent",
         data.message || "I'm sorry, I couldn't generate a response.",
-        (data.routedAgent as AgentId) || agentKey,
+        routedAgent,
         "text"
       );
 
@@ -477,9 +484,13 @@ Notes: ${builderNotes || "None"}
                   </div>
 
                   <div className="bg-slate-100 text-slate-900 px-3 py-2 rounded-lg">
-                    <div className="text-[10px] text-slate-500 mb-1">
-                      {agent.label}
-                      {msg.kind === "status" ? " Status" : ""}
+                    <div className="text-[10px] text-slate-500 mb-1 flex items-center gap-2">
+                      <span>{agent.label}</span>
+                      {msg.kind === "status" && (
+                        <span className="px-1.5 py-0.5 bg-slate-200 rounded text-[9px]">
+                          Routing
+                        </span>
+                      )}
                     </div>
                     <div className="text-sm whitespace-pre-wrap">
                       {msg.text}
