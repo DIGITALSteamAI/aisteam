@@ -81,21 +81,26 @@ export async function GET(request: NextRequest) {
       console.error("Error creating project_settings:", createError);
       // If table doesn't exist or other DB error, return defaults anyway
       // This allows the UI to work even if the table hasn't been created yet
-      if (createError.code === "42P01" || createError.message?.includes("does not exist")) {
+      const errorMsg = createError.message?.toLowerCase() || "";
+      const errorCode = createError.code || "";
+      
+      if (errorCode === "42P01" || 
+          errorCode === "PGRST301" ||
+          errorMsg.includes("does not exist") ||
+          errorMsg.includes("relation") && errorMsg.includes("does not exist") ||
+          errorMsg.includes("no such table")) {
         console.warn("project_settings table does not exist, returning defaults without persistence");
         return NextResponse.json({ 
           settings: DEFAULT_SETTINGS,
           warning: "Settings table not found. Changes will not be saved until table is created."
-        });
+        }, { status: 200 });
       }
-      return NextResponse.json(
-        { 
-          error: "Failed to create default settings", 
-          details: createError.message,
-          hint: "The project_settings table may not exist. Please create it first."
-        },
-        { status: 500 }
-      );
+      // For any other error, still return defaults so UI works
+      console.warn("Error creating settings, but returning defaults anyway:", createError);
+      return NextResponse.json({ 
+        settings: DEFAULT_SETTINGS,
+        warning: "Could not save settings. Using defaults."
+      }, { status: 200 });
     }
 
     return NextResponse.json({ settings: newSettings.settings || DEFAULT_SETTINGS });
