@@ -164,10 +164,26 @@ export default function ProjectDashboardPage() {
     async function loadProject() {
       try {
         const res = await fetch(`/api/projects/${id}`);
+        
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          console.error("Project fetch failed:", res.status, errorData);
+          setProject(null);
+          setLoading(false);
+          return;
+        }
+        
         const json = (await res.json()) as any;
-        setProject(json.data ?? null);
+        console.log("Project data received:", json);
+        
+        if (json.data) {
+          setProject(json.data);
+        } else {
+          console.error("Project data missing from response:", json);
+          setProject(null);
+        }
       } catch (err) {
-        console.error("Project fetch failed", err);
+        console.error("Project fetch error:", err);
         setProject(null);
       } finally {
         setLoading(false);
