@@ -21,27 +21,91 @@ export default function AssistantSystemBiblePage() {
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">Contents</h2>
         <ol className="list-decimal ml-6 text-sm space-y-1">
-          <li>Purpose and Scope</li>
-          <li>Core Concepts and Definitions</li>
-          <li>High Level Architecture</li>
-          <li>Message Lifecycle</li>
-          <li>Agent Selection and Routing</li>
-          <li>Validation and Escalation</li>
-          <li>Project Context and Scoping</li>
-          <li>Execution Model and Tasks</li>
-          <li>Logging and Experience Model</li>
-          <li>Assistant Panel UI Behavior</li>
-          <li>Error Handling and Recovery</li>
-          <li>API Contracts</li>
-          <li>Database Schema</li>
-          <li>Implementation Patterns and Notes</li>
-          <li>Future Enhancements</li>
-          <li>Related Files and Integration Points</li>
+          <li>
+            <a href="#purpose-and-scope" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Purpose and Scope
+            </a>
+          </li>
+          <li>
+            <a href="#core-concepts-and-definitions" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Core Concepts and Definitions
+            </a>
+          </li>
+          <li>
+            <a href="#high-level-architecture" className="text-blue-600 hover:text-blue-800 hover:underline">
+              High Level Architecture
+            </a>
+          </li>
+          <li>
+            <a href="#message-lifecycle" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Message Lifecycle
+            </a>
+          </li>
+          <li>
+            <a href="#agent-selection-and-routing" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Agent Selection and Routing
+            </a>
+          </li>
+          <li>
+            <a href="#validation-and-escalation" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Validation and Escalation
+            </a>
+          </li>
+          <li>
+            <a href="#project-context-and-scoping" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Project Context and Scoping
+            </a>
+          </li>
+          <li>
+            <a href="#execution-model-and-tasks" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Execution Model and Tasks
+            </a>
+          </li>
+          <li>
+            <a href="#logging-and-experience-model" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Logging and Experience Model
+            </a>
+          </li>
+          <li>
+            <a href="#assistant-panel-ui-behavior" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Assistant Panel UI Behavior
+            </a>
+          </li>
+          <li>
+            <a href="#error-handling-and-recovery" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Error Handling and Recovery
+            </a>
+          </li>
+          <li>
+            <a href="#api-contracts" className="text-blue-600 hover:text-blue-800 hover:underline">
+              API Contracts
+            </a>
+          </li>
+          <li>
+            <a href="#database-schema" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Database Schema
+            </a>
+          </li>
+          <li>
+            <a href="#implementation-patterns-and-notes" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Implementation Patterns and Notes
+            </a>
+          </li>
+          <li>
+            <a href="#future-enhancements" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Future Enhancements
+            </a>
+          </li>
+          <li>
+            <a href="#related-files-and-integration-points" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Related Files and Integration Points
+            </a>
+          </li>
         </ol>
       </section>
 
       {/* 1. Purpose and Scope */}
-      <section className="space-y-3">
+      <section id="purpose-and-scope" className="space-y-3 scroll-mt-8">
         <h2 className="text-xl font-semibold">1. Purpose and Scope</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           The assistant system in AISTEAM is the central intelligence that works across projects, tenants and panels.  
@@ -59,7 +123,7 @@ export default function AssistantSystemBiblePage() {
       </section>
 
       {/* 2. Core Concepts and Definitions */}
-      <section className="space-y-3">
+      <section id="core-concepts-and-definitions" className="space-y-3 scroll-mt-8">
         <h2 className="text-xl font-semibold">2. Core Concepts and Definitions</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           The assistant system uses a few core concepts.  
@@ -118,7 +182,7 @@ export default function AssistantSystemBiblePage() {
       </section>
 
       {/* 3. High Level Architecture */}
-      <section className="space-y-4">
+      <section id="high-level-architecture" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">3. High Level Architecture</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           The assistant system sits between the front end assistant panel, the AI model, the Supabase database and any external platforms such as WordPress or WooCommerce.
@@ -145,7 +209,7 @@ export default function AssistantSystemBiblePage() {
       </section>
 
       {/* 4. Message Lifecycle */}
-      <section className="space-y-4">
+      <section id="message-lifecycle" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">4. Message Lifecycle</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           Every user message in the assistant panel follows a structured lifecycle.  
@@ -202,7 +266,7 @@ export default function AssistantSystemBiblePage() {
       </section>
 
       {/* 5. Agent Selection and Routing */}
-      <section className="space-y-4">
+      <section id="agent-selection-and-routing" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">5. Agent Selection and Routing</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           The assistant panel lets the user select an active agent, but the Supervisor still has authority to override routing when it clearly leads to a better outcome.
@@ -308,7 +372,7 @@ function determineAgent(ctx: RoutingContext): AgentId {
       </section>
 
       {/* 6. Validation and Escalation */}
-      <section className="space-y-4">
+      <section id="validation-and-escalation" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">6. Validation and Escalation</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           The assistant system has clear rules about when an agent can answer directly, when clarification is required and when escalation is needed.
@@ -345,7 +409,7 @@ function determineAgent(ctx: RoutingContext): AgentId {
       </section>
 
       {/* 7. Project Context and Scoping */}
-      <section className="space-y-4">
+      <section id="project-context-and-scoping" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">7. Project Context and Scoping</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           The assistant must always know which project it is working on, or that it is in a cross project mode.  
@@ -373,7 +437,7 @@ function determineAgent(ctx: RoutingContext): AgentId {
       </section>
 
       {/* 8. Execution Model and Tasks */}
-      <section className="space-y-4">
+      <section id="execution-model-and-tasks" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">8. Execution Model and Tasks</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           Execution is the part where ideas become changes in external systems.  
@@ -435,7 +499,7 @@ Request body:
       </section>
 
       {/* 9. Logging and Experience Model */}
-      <section className="space-y-4">
+      <section id="logging-and-experience-model" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">9. Logging and Experience Model</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           The assistant system must be observable.  
@@ -492,7 +556,7 @@ Request body:
       </section>
 
       {/* 10. Assistant Panel UI Behavior */}
-      <section className="space-y-4">
+      <section id="assistant-panel-ui-behavior" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">10. Assistant Panel UI Behavior</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           The UI of the assistant panel is where users feel the system.  
@@ -536,7 +600,7 @@ Request body:
       </section>
 
       {/* 11. Error Handling and Recovery */}
-      <section className="space-y-4">
+      <section id="error-handling-and-recovery" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">11. Error Handling and Recovery</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           Errors are inevitable. The system must handle them in a way that is safe and understandable.
@@ -570,7 +634,7 @@ I can help you verify or update the credentials in the project settings then we 
       </section>
 
       {/* 12. API Contracts */}
-      <section className="space-y-4">
+      <section id="api-contracts" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">12. API Contracts</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           The assistant system exposes at least two main API routes.  
@@ -661,7 +725,7 @@ Response body:
       </section>
 
       {/* 13. Database Schema */}
-      <section className="space-y-4">
+      <section id="database-schema" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">13. Database Schema</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           The assistant system relies on a small set of tables that store conversations, messages, tasks and optional agent definitions.
@@ -722,7 +786,7 @@ config        jsonb not null default '{}'`}
       </section>
 
       {/* 14. Implementation Patterns and Notes */}
-      <section className="space-y-4">
+      <section id="implementation-patterns-and-notes" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">14. Implementation Patterns and Notes</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           This section captures practical guidance for developers who work on the assistant system and its integration with the rest of AISTEAM.
@@ -759,7 +823,7 @@ config        jsonb not null default '{}'`}
       </section>
 
       {/* 15. Future Enhancements */}
-      <section className="space-y-4">
+      <section id="future-enhancements" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">15. Future Enhancements</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           The current design is stable enough for first implementation.  
@@ -789,7 +853,7 @@ config        jsonb not null default '{}'`}
       </section>
 
       {/* 16. Related Files and Integration Points */}
-      <section className="space-y-3">
+      <section id="related-files-and-integration-points" className="space-y-3 scroll-mt-8">
         <h2 className="text-xl font-semibold">16. Related Files and Integration Points</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           This is the quick map of where the assistant system lives in the codebase and database.
