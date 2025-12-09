@@ -4,6 +4,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import PageWrapper from "../components/PageWrapper";
 import CmsIcon from "./modules/CmsIcon";
+import ProjectSettingsModal from "../components/projects/ProjectSettingsModal";
 
 type ViewMode = "cards" | "list";
 type FilterMode = "all" | "active" | "staging" | "development";
