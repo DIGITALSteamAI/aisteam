@@ -2,7 +2,7 @@
 
 export default function KBAgentsPage() {
   return (
-    <div className="bg-white border rounded-xl p-8 text-slate-800 space-y-10">
+    <div className="bg-white border rounded-xl p-8 text-slate-800 space-y-10 max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold mb-4">
         AI Agent System Documentation
       </h1>
@@ -19,24 +19,76 @@ export default function KBAgentsPage() {
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Contents</h2>
         <ol className="list-decimal ml-6 space-y-1 text-sm">
-          <li>Overview</li>
-          <li>Central Agent Panel</li>
-          <li>Agent Hierarchy and Types</li>
-          <li>Agent Catalog</li>
-          <li>Assistant Chat and Agent Selection</li>
-          <li>Task Flow from User Request to Execution</li>
-          <li>Supervisor Decision Process</li>
-          <li>Agent Routing Logic</li>
-          <li>Project Context and Information</li>
-          <li>Task Execution</li>
-          <li>API Structure</li>
-          <li>Database Schema</li>
-          <li>Related Files</li>
+          <li>
+            <a href="#overview" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Overview
+            </a>
+          </li>
+          <li>
+            <a href="#central-agent-panel" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Central Agent Panel
+            </a>
+          </li>
+          <li>
+            <a href="#agent-hierarchy-and-types" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Agent Hierarchy and Types
+            </a>
+          </li>
+          <li>
+            <a href="#agent-catalog" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Agent Catalog
+            </a>
+          </li>
+          <li>
+            <a href="#assistant-chat-and-agent-selection" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Assistant Chat and Agent Selection
+            </a>
+          </li>
+          <li>
+            <a href="#task-flow-from-user-request-to-execution" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Task Flow from User Request to Execution
+            </a>
+          </li>
+          <li>
+            <a href="#supervisor-decision-process" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Supervisor Decision Process
+            </a>
+          </li>
+          <li>
+            <a href="#agent-routing-logic" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Agent Routing Logic
+            </a>
+          </li>
+          <li>
+            <a href="#project-context-and-information" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Project Context and Information
+            </a>
+          </li>
+          <li>
+            <a href="#task-execution" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Task Execution
+            </a>
+          </li>
+          <li>
+            <a href="#api-structure" className="text-blue-600 hover:text-blue-800 hover:underline">
+              API Structure
+            </a>
+          </li>
+          <li>
+            <a href="#database-schema" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Database Schema
+            </a>
+          </li>
+          <li>
+            <a href="#related-files" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Related Files
+            </a>
+          </li>
         </ol>
       </section>
 
       {/* Overview */}
-      <section className="space-y-3">
+      <section id="overview" className="space-y-3 scroll-mt-8">
         <h2 className="text-xl font-semibold">Overview</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           The AISTEAM agent system is built around a Supervisor pattern combined
@@ -62,7 +114,7 @@ export default function KBAgentsPage() {
       </section>
 
       {/* Central Agent Panel */}
-      <section className="space-y-3">
+      <section id="central-agent-panel" className="space-y-3 scroll-mt-8">
         <h2 className="text-xl font-semibold">Central Agent Panel</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           AISTEAM uses a single centralized assistant panel instead of separate
@@ -103,7 +155,7 @@ export default function KBAgentsPage() {
       </section>
 
       {/* Agent Hierarchy and Types */}
-      <section className="space-y-3">
+      <section id="agent-hierarchy-and-types" className="space-y-3 scroll-mt-8">
         <h2 className="text-xl font-semibold">Agent Hierarchy and Types</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           Agents are organized into a clear hierarchy. This keeps the system
@@ -160,7 +212,7 @@ export default function KBAgentsPage() {
       </section>
 
       {/* Agent Catalog */}
-      <section className="space-y-4">
+      <section id="agent-catalog" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">Agent Catalog</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           This section documents each core agent, the type of work they perform,
@@ -250,7 +302,7 @@ export default function KBAgentsPage() {
       </section>
 
       {/* Assistant Chat and Agent Selection */}
-      <section className="space-y-3">
+      <section id="assistant-chat-and-agent-selection" className="space-y-3 scroll-mt-8">
         <h2 className="text-xl font-semibold">
           Assistant Chat and Agent Selection
         </h2>
@@ -294,7 +346,7 @@ export default function KBAgentsPage() {
       </section>
 
       {/* Task Flow */}
-      <section className="space-y-4">
+      <section id="task-flow-from-user-request-to-execution" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">
           Task Flow from User Request to Execution
         </h2>
@@ -410,7 +462,7 @@ export default function KBAgentsPage() {
       </section>
 
       {/* Supervisor Decision Process */}
-      <section className="space-y-3">
+      <section id="supervisor-decision-process" className="space-y-3 scroll-mt-8">
         <h2 className="text-xl font-semibold">Supervisor Decision Process</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           For each user request, the Supervisor follows a repeatable process:
@@ -431,7 +483,7 @@ export default function KBAgentsPage() {
       </section>
 
       {/* Agent Routing Logic */}
-      <section className="space-y-4">
+      <section id="agent-routing-logic" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">Agent Routing Logic</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           Routing is currently based on a combination of explicit selection in
@@ -485,7 +537,7 @@ export default function KBAgentsPage() {
       </section>
 
       {/* Project Context and Information */}
-      <section className="space-y-3">
+      <section id="project-context-and-information" className="space-y-3 scroll-mt-8">
         <h2 className="text-xl font-semibold">Project Context and Information</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           When a user opens the assistant while on a project page, the system
@@ -507,7 +559,7 @@ export default function KBAgentsPage() {
       </section>
 
       {/* Task Execution */}
-      <section className="space-y-3">
+      <section id="task-execution" className="space-y-3 scroll-mt-8">
         <h2 className="text-xl font-semibold">Task Execution</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           Execution agents use structured tasks to interact with external
@@ -529,7 +581,7 @@ export default function KBAgentsPage() {
       </section>
 
       {/* API Structure */}
-      <section className="space-y-4">
+      <section id="api-structure" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">API Structure</h2>
 
         <h3 className="text-lg font-semibold">Assistant chat route</h3>
@@ -580,7 +632,7 @@ Request:
       </section>
 
       {/* Database Schema */}
-      <section className="space-y-4">
+      <section id="database-schema" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">Database Schema</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           The assistant system uses dedicated tables to store conversations,
@@ -642,7 +694,7 @@ updated_at       timestamptz`}
       </section>
 
       {/* Related Files */}
-      <section className="space-y-3">
+      <section id="related-files" className="space-y-3 scroll-mt-8">
         <h2 className="text-xl font-semibold">Related Files</h2>
         <ul className="list-disc ml-6 text-sm space-y-1">
           <li>app/api/assistant/chat/route.ts, main chat API and routing</li>
