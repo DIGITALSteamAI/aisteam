@@ -101,7 +101,16 @@ export default function KBHomePage() {
       <section>
         <h2 className="text-xl font-semibold mb-3">System</h2>
         <ul className="ml-4 list-disc text-sm space-y-1">
-          <li><Link href="/kb/agents" className="text-blue-600 hover:underline">Agents</Link></li>
+          <li>
+            <Link href="/kb/agents" className="text-blue-600 hover:underline">Agents</Link>
+            <ul className="ml-6 list-disc space-y-1 mt-1">
+              <li>
+                <Link href="/kb/agents/workflow" className="text-blue-600 hover:underline">
+                  Agent Workflow Logic
+                </Link>
+              </li>
+            </ul>
+          </li>
           <li><Link href="/kb/settings" className="text-blue-600 hover:underline">Settings</Link></li>
           <li><Link href="/kb/assistant" className="text-blue-600 hover:underline">Assistant</Link></li>
         </ul>

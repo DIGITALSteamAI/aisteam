@@ -80,6 +80,11 @@ export default function KBAgentsPage() {
             </a>
           </li>
           <li>
+            <a href="#workflow-logic" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Workflow Logic
+            </a>
+          </li>
+          <li>
             <a href="#related-files" className="text-blue-600 hover:text-blue-800 hover:underline">
               Related Files
             </a>
@@ -690,6 +695,37 @@ updated_at       timestamptz`}
           <li>Role description and capabilities</li>
           <li>Default tools and allowed task types</li>
           <li>Ordering and visibility flags in the panel</li>
+        </ul>
+      </section>
+
+      {/* Workflow Logic */}
+      <section id="workflow-logic" className="space-y-3 scroll-mt-8">
+        <h2 className="text-xl font-semibold">Workflow Logic</h2>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          The workflow logic for the AISTEAM assistant system is documented in detail in a separate comprehensive reference document. This document, called the "Assistant System Bible", covers the complete architecture, message lifecycle, routing decisions, validation rules, execution model, and implementation patterns.
+        </p>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          The workflow document is essential reading for developers working on the assistant system, as it provides the source of truth for how the system behaves at every level.
+        </p>
+        <div className="mt-4">
+          <a 
+            href="/kb/agents/workflow" 
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Read the Assistant System Bible →
+          </a>
+        </div>
+        <h3 className="text-lg font-semibold mt-6">Key Topics Covered</h3>
+        <ul className="list-disc ml-6 text-sm space-y-1">
+          <li>Message lifecycle and experience timeline</li>
+          <li>Agent selection and routing logic</li>
+          <li>Validation and escalation rules</li>
+          <li>Project context and scoping</li>
+          <li>Execution model and task contracts</li>
+          <li>Logging and experience tracking</li>
+          <li>UI behavior and error handling</li>
+          <li>API contracts and database schema</li>
+          <li>Implementation patterns and best practices</li>
         </ul>
       </section>
 
