@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import PageWrapper from "../../components/PageWrapper";
 import CmsIcon from "../modules/CmsIcon";
 
@@ -154,11 +154,18 @@ export default function ProjectDashboardPage() {
 
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [hasLoaded, setHasLoaded] = useState(false);
+  const loadedIdRef = useRef<string | null>(null);
 
   useEffect(() => {
+    // Reset state when ID changes
+    if (id !== loadedIdRef.current) {
+      setProject(null);
+      setLoading(true);
+      loadedIdRef.current = null;
+    }
+
     // Prevent multiple loads for the same ID
-    if (!id || hasLoaded) {
+    if (!id || loadedIdRef.current === id) {
       if (!id) {
         setLoading(false);
       }
@@ -166,6 +173,7 @@ export default function ProjectDashboardPage() {
     }
 
     let isMounted = true;
+    loadedIdRef.current = id;
 
     async function loadProject() {
       try {
@@ -188,7 +196,6 @@ export default function ProjectDashboardPage() {
           if (isMounted) {
             setProject(null);
             setLoading(false);
-            setHasLoaded(true);
           }
           return;
         }
@@ -214,7 +221,6 @@ export default function ProjectDashboardPage() {
       } finally {
         if (isMounted) {
           setLoading(false);
-          setHasLoaded(true);
         }
       }
     }
@@ -224,7 +230,7 @@ export default function ProjectDashboardPage() {
     return () => {
       isMounted = false;
     };
-  }, [id, hasLoaded]);
+  }, [id]);
 
   if (loading) {
     return (
