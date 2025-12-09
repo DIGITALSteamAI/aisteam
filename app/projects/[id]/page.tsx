@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
-import PageWrapper from "../components/PageWrapper";
+import PageWrapper from "../../components/PageWrapper";
 import CmsIcon from "../modules/CmsIcon";
 
 /* IMPORT PANELS */
