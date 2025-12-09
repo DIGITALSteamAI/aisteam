@@ -201,6 +201,13 @@ function CardsView({
             <Link
               href={`/projects/${project.id}`}
               className="px-3 py-1.5 bg-slate-200 text-slate-700 rounded-full text-xs hover:bg-slate-300 transition"
+              onClick={(e) => {
+                // Ensure navigation works
+                if (!project.id) {
+                  e.preventDefault();
+                  console.error("Project ID is missing");
+                }
+              }}
             >
               Open project
             </Link>
