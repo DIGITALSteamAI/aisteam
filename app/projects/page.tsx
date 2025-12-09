@@ -201,21 +201,12 @@ function CardsView({
           </div>
 
           <div className="flex gap-2">
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (project.id) {
-                  console.log("Navigating to project:", project.id);
-                  window.location.href = `/projects/${project.id}`;
-                } else {
-                  console.error("Project ID is missing");
-                }
-              }}
-              className="px-3 py-1.5 bg-slate-200 text-slate-700 rounded-full text-xs hover:bg-slate-300 transition cursor-pointer"
+            <a
+              href={`/projects/${project.id}`}
+              className="px-3 py-1.5 bg-slate-200 text-slate-700 rounded-full text-xs hover:bg-slate-300 transition cursor-pointer text-center no-underline"
             >
               Open project
-            </button>
+            </a>
 
             <button
               onClick={() => onSettingsClick(project.id)}
@@ -268,21 +259,12 @@ function ListView({
 
                 <td className="px-4 py-2 text-right">
                   <div className="inline-flex gap-2">
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (project.id) {
-                          console.log("Navigating to project:", project.id);
-                          window.location.href = `/projects/${project.id}`;
-                        } else {
-                          console.error("Project ID is missing");
-                        }
-                      }}
-                      className="text-xs px-3 py-1 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer"
+                    <a
+                      href={`/projects/${project.id}`}
+                      className="text-xs px-3 py-1 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer no-underline inline-block text-center"
                     >
                       Open
-                    </button>
+                    </a>
                     <button
                       onClick={() => onSettingsClick(project.id)}
                       className="text-xs px-3 py-1 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200"
