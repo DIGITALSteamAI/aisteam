@@ -163,7 +163,16 @@ export default function ProjectDashboardPage() {
 
     async function loadProject() {
       try {
-        const res = await fetch(`/api/projects/${id}`);
+        // Add timeout to prevent hanging
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
+        const res = await fetch(`/api/projects/${id}`, {
+          signal: controller.signal,
+          cache: "no-store"
+        });
+        
+        clearTimeout(timeoutId);
         
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
@@ -182,8 +191,11 @@ export default function ProjectDashboardPage() {
           console.error("Project data missing from response:", json);
           setProject(null);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Project fetch error:", err);
+        if (err.name === 'AbortError') {
+          console.error("Request timed out after 10 seconds");
+        }
         setProject(null);
       } finally {
         setLoading(false);
