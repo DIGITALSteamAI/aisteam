@@ -154,12 +154,18 @@ export default function ProjectDashboardPage() {
 
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
-    if (!id) {
-      setLoading(false);
+    // Prevent multiple loads for the same ID
+    if (!id || hasLoaded) {
+      if (!id) {
+        setLoading(false);
+      }
       return;
     }
+
+    let isMounted = true;
 
     async function loadProject() {
       try {
@@ -174,16 +180,23 @@ export default function ProjectDashboardPage() {
         
         clearTimeout(timeoutId);
         
+        if (!isMounted) return;
+        
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
           console.error("Project fetch failed:", res.status, errorData);
-          setProject(null);
-          setLoading(false);
+          if (isMounted) {
+            setProject(null);
+            setLoading(false);
+            setHasLoaded(true);
+          }
           return;
         }
         
         const json = (await res.json()) as any;
         console.log("Project data received:", json);
+        
+        if (!isMounted) return;
         
         if (json.data) {
           setProject(json.data);
@@ -192,18 +205,26 @@ export default function ProjectDashboardPage() {
           setProject(null);
         }
       } catch (err: any) {
+        if (!isMounted) return;
         console.error("Project fetch error:", err);
         if (err.name === 'AbortError') {
           console.error("Request timed out after 10 seconds");
         }
         setProject(null);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+          setHasLoaded(true);
+        }
       }
     }
 
     loadProject();
-  }, [id]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id, hasLoaded]);
 
   if (loading) {
     return (
