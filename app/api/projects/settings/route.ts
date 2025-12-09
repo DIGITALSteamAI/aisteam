@@ -66,7 +66,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // If not found (PGRST116), create default entry
+    // If not found (PGRST116), try to create default entry
+    // If table doesn't exist, just return defaults without saving
     const { data: newSettings, error: createError } = await supabase
       .from("project_settings")
       .insert({
@@ -78,6 +79,15 @@ export async function GET(request: NextRequest) {
 
     if (createError) {
       console.error("Error creating project_settings:", createError);
+      // If table doesn't exist or other DB error, return defaults anyway
+      // This allows the UI to work even if the table hasn't been created yet
+      if (createError.code === "42P01" || createError.message?.includes("does not exist")) {
+        console.warn("project_settings table does not exist, returning defaults without persistence");
+        return NextResponse.json({ 
+          settings: DEFAULT_SETTINGS,
+          warning: "Settings table not found. Changes will not be saved until table is created."
+        });
+      }
       return NextResponse.json(
         { 
           error: "Failed to create default settings", 
