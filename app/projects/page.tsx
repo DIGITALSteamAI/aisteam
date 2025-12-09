@@ -200,7 +200,7 @@ function CardsView({
           <div className="flex gap-2">
             <Link
               href={`/projects/${project.id}`}
-              className="px-3 py-1.5 bg-slate-200 text-slate-700 rounded-full text-xs hover:bg-slate-300"
+              className="px-3 py-1.5 bg-slate-200 text-slate-700 rounded-full text-xs hover:bg-slate-300 transition"
             >
               Open project
             </Link>
