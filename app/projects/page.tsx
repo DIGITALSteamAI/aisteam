@@ -2,7 +2,6 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import PageWrapper from "../components/PageWrapper";
 import CmsIcon from "./modules/CmsIcon";
 import ProjectSettingsModal from "../components/projects/ProjectSettingsModal";
@@ -177,8 +176,6 @@ function CardsView({
   projects: Project[]; 
   onSettingsClick: (projectId: string) => void;
 }) {
-  const router = useRouter();
-  
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 
@@ -201,12 +198,12 @@ function CardsView({
           </div>
 
           <div className="flex gap-2">
-            <a
+            <Link
               href={`/projects/${project.id}`}
               className="px-3 py-1.5 bg-slate-200 text-slate-700 rounded-full text-xs hover:bg-slate-300 transition cursor-pointer text-center no-underline"
             >
               Open project
-            </a>
+            </Link>
 
             <button
               onClick={() => onSettingsClick(project.id)}
@@ -230,8 +227,6 @@ function ListView({
   projects: Project[]; 
   onSettingsClick: (projectId: string) => void;
 }) {
-  const router = useRouter();
-  
   return (
     <section className="bg-white rounded-xl shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
@@ -259,12 +254,12 @@ function ListView({
 
                 <td className="px-4 py-2 text-right">
                   <div className="inline-flex gap-2">
-                    <a
+                    <Link
                       href={`/projects/${project.id}`}
                       className="text-xs px-3 py-1 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer no-underline inline-block text-center"
                     >
                       Open
-                    </a>
+                    </Link>
                     <button
                       onClick={() => onSettingsClick(project.id)}
                       className="text-xs px-3 py-1 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200"

@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
-import PageWrapper from "../../components/PageWrapper";
+import PageWrapper from "../components/PageWrapper";
 import CmsIcon from "../modules/CmsIcon";
 
 /* IMPORT PANELS */
@@ -150,7 +150,10 @@ function AgencyIcon() {
 
 export default function ProjectDashboardPage() {
   const params = useParams();
+  console.log("Params received:", params);
   const id = params?.id as string | undefined;
+
+  if (!id) return null;
 
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -165,10 +168,7 @@ export default function ProjectDashboardPage() {
     }
 
     // Prevent multiple loads for the same ID
-    if (!id || loadedIdRef.current === id) {
-      if (!id) {
-        setLoading(false);
-      }
+    if (loadedIdRef.current === id) {
       return;
     }
 
