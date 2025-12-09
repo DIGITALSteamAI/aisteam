@@ -27,12 +27,20 @@ export default function ProjectSettingsContainer({
     async function loadSettings() {
       try {
         const response = await fetch(`/api/projects/settings?projectId=${projectId}`);
-        if (!response.ok) {
-          throw new Error("Failed to load settings");
-        }
         const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || data.details || "Failed to load settings");
+        }
+        
+        if (!data.settings) {
+          throw new Error("Settings data is missing from response");
+        }
+        
         setSettings(data.settings);
+        setError(null);
       } catch (err: any) {
+        console.error("Error loading settings:", err);
         setError(err.message || "Failed to load settings");
       } finally {
         setLoading(false);
@@ -41,6 +49,9 @@ export default function ProjectSettingsContainer({
 
     if (projectId) {
       loadSettings();
+    } else {
+      setError("Project ID is missing");
+      setLoading(false);
     }
   }, [projectId]);
 

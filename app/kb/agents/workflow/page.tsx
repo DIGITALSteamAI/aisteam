@@ -102,6 +102,11 @@ export default function AssistantSystemBiblePage() {
               Related Files and Integration Points
             </a>
           </li>
+          <li>
+            <a href="#task-planning-protocol" className="text-blue-600 hover:text-blue-800 hover:underline">
+              Task Planning Protocol
+            </a>
+          </li>
         </ol>
       </section>
 
@@ -118,7 +123,7 @@ export default function AssistantSystemBiblePage() {
         </p>
         <ul className="list-disc ml-6 text-sm space-y-1">
           <li>Audience, engineers, AI configuration, product design and future agents</li>
-          <li>Scope, assistant panel, chat, routing, parallel runs, execution, logging and experience</li>
+          <li>Scope, assistant panel, chat, routing, parallel runs, planning, execution, logging and experience</li>
           <li>Out of scope, billing, authentication and general app layout that is not related to the assistant workflow</li>
         </ul>
       </section>
@@ -197,6 +202,12 @@ export default function AssistantSystemBiblePage() {
               The core rules that govern all runs and tasks, including allowed scope, clarity of inputs, transparency of actions and the law of no return for reversibility and explicit consent.
             </dd>
           </div>
+          <div>
+            <dt className="font-semibold">Planning phase</dt>
+            <dd className="text-slate-700">
+              The mandatory preparation step for any meaningful request where the Supervisor works out requirements, unknowns, forks and risks before any run or task is created.
+            </dd>
+          </div>
         </dl>
       </section>
 
@@ -213,7 +224,7 @@ export default function AssistantSystemBiblePage() {
           {`flowchart TD
   U[User in assistant panel] --> C[Assistant chat API]
   C --> S[Supervisor logic]
-  S --> P[Plan run and steps]
+  S --> P[Planning phase, build run and steps]
   P --> R1[Run with parallel tasks]
   R1 --> T[Execution API]
   T --> E[External systems and platforms]
@@ -223,7 +234,7 @@ export default function AssistantSystemBiblePage() {
   ANS --> U`}
         </pre>
         <p className="text-sm leading-relaxed max-w-3xl">
-          The Supervisor always remains in the loop. For complex requests Hans creates a run that may involve several agents and tasks in parallel, then validates the combined result before sending the final message to the user.
+          The Supervisor always remains in the loop. For complex requests Hans creates a plan, then a run that may involve several agents and tasks in parallel, then validates the combined result before sending the final message to the user.
         </p>
       </section>
 
@@ -240,10 +251,11 @@ export default function AssistantSystemBiblePage() {
           <li>User enters a message in the assistant panel and clicks send.</li>
           <li>Front end sends request to the assistant chat API with conversation id, active agent id and project context.</li>
           <li>API loads conversation history and context from the database.</li>
-          <li>Supervisor evaluates the new message and classifies it as a simple answer or a multi step run.</li>
+          <li>Supervisor evaluates the new message and classifies it as a simple answer or a multi step run that needs a planning phase.</li>
           <li>If simple, Supervisor chooses the best agent and that agent prepares a direct answer.</li>
-          <li>If a run is needed, Supervisor builds a plan and creates an AssistantRun record that groups the work.</li>
-          <li>The plan is converted into one or more AssistantTask records, possibly grouped into phases with parallel tasks.</li>
+          <li>If a run is needed, Supervisor enters the task planning protocol and builds a plan that includes requirements, subtasks, agents and forks.</li>
+          <li>Once the user approves the plan, Supervisor creates an AssistantRun record that groups the work.</li>
+          <li>The approved plan is converted into one or more AssistantTask records, possibly grouped into phases with parallel tasks.</li>
           <li>Each task is checked against the assistant laws before it is allowed to execute.</li>
           <li>Tasks are executed or queued through the execution API, possibly in parallel where the plan allows it.</li>
           <li>Supervisor validates the combined agent output and builds the final user response.</li>
@@ -263,7 +275,7 @@ export default function AssistantSystemBiblePage() {
             <span className="font-semibold">assistant</span> response sent to the user
           </li>
           <li>
-            <span className="font-semibold">status</span> internal status item such as task created or execution started that can be displayed as a thin status bubble
+            <span className="font-semibold">status</span> internal status item such as planning started, task created or execution started that can be displayed as a thin status bubble
           </li>
           <li>
             <span className="font-semibold">system</span> internal notes or prompts that are not shown to the user by default
@@ -493,7 +505,8 @@ function determineAgent(ctx: RoutingContext): AgentId {
 
         <h3 className="text-lg font-semibold">8.1 Run and task contracts</h3>
         <p className="text-sm leading-relaxed max-w-3xl">
-          Runs group tasks that belong to the same user intent. Tasks represent individual actions that can be executed, often in parallel inside a run.
+          Runs group tasks that belong to the same user intent. Tasks represent individual actions that can be executed, often in parallel inside a run.  
+          Every run should originate from an explicit planning phase described in the task planning protocol.
         </p>
         <pre className="bg-slate-900 text-slate-100 text-xs rounded p-4 overflow-x-auto">
           {`interface AssistantRun {
@@ -579,6 +592,7 @@ Request body:
           <li>Routing decision for each user message, including previous and new agent</li>
           <li>Run creation, updates and completion</li>
           <li>Task creation, updates and completion including execution status and reversibility information</li>
+          <li>Planning events such as requirements listing, forks proposed and plan approval</li>
           <li>Important system events such as missing configuration or external API errors</li>
         </ul>
 
@@ -597,7 +611,21 @@ Request body:
     "summary": "User asked to create a new service page"
   },
   {
+    "time": "2025-12-09T12:00:03Z",
+    "actor": "supervisor",
+    "kind": "planning",
+    "runId": "run_1",
+    "summary": "Hans listed requirements and proposed three paths"
+  },
+  {
     "time": "2025-12-09T12:00:05Z",
+    "actor": "user",
+    "kind": "message",
+    "runId": "run_1",
+    "summary": "User chose full service page path"
+  },
+  {
+    "time": "2025-12-09T12:00:08Z",
     "actor": "supervisor",
     "kind": "routing",
     "runId": "run_1",
@@ -639,7 +667,7 @@ Request body:
         <h2 className="text-xl font-semibold">10. Assistant Panel UI Behavior</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           The UI of the assistant panel is where users feel the system.  
-          The behavior must be predictable and should make the invisible routing, run planning and execution steps easy to understand.
+          The behavior must be predictable and should make the invisible routing, planning and execution steps easy to understand.
         </p>
 
         <h3 className="text-lg font-semibold">10.1 Layout</h3>
@@ -662,7 +690,7 @@ Request body:
         <ul className="list-disc ml-6 text-sm space-y-1">
           <li>User messages aligned to the right or styled differently.</li>
           <li>Assistant messages show the agent avatar that authored them.</li>
-          <li>Status entries styled as light system chips such as task created or executing.</li>
+          <li>Status entries styled as light system chips such as planning started, task created or executing.</li>
           <li>Runs can be summarized in collapsible blocks that list agents involved, tasks and current status.</li>
           <li>Long explanations can be collapsed with a short summary and an expand control.</li>
         </ul>
@@ -672,9 +700,9 @@ Request body:
           While the assistant is working the UI should indicate what is going on instead of a simple generic typing bubble.
         </p>
         <ul className="list-disc ml-6 text-sm space-y-1">
-          <li>Thinking, the Supervisor or agent is planning a response.</li>
+          <li>Thinking, the Supervisor or agent is preparing an answer.</li>
           <li>Routing, Supervisor is deciding which agent or agents should handle this.</li>
-          <li>Planning, Hans is creating a multi step run.</li>
+          <li>Planning, Hans is creating or revising a multi step run.</li>
           <li>Executing, one or more tasks are being sent to or processed by external systems.</li>
           <li>Validating, Supervisor is checking the result before answering.</li>
         </ul>
@@ -971,6 +999,195 @@ config        jsonb not null default '{}'`}
           <li>supabase/migrations/assistant_agent_definitions.sql, optional agent catalog</li>
           <li>Any CMS or ecommerce integration modules used by the execution API</li>
         </ul>
+      </section>
+
+      {/* 17. Task Planning Protocol */}
+      <section id="task-planning-protocol" className="space-y-4 scroll-mt-8">
+        <h2 className="text-xl font-semibold">17. Task Planning Protocol</h2>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          The task planning protocol is the base rule for how the assistant panel behaves when a request involves real work.  
+          The system never jumps directly from user message to execution.  
+          Instead it always passes through a visible planning phase that creates a list of requirements, subtasks, agents and forks before any run or task is created.
+        </p>
+
+        <h3 className="text-lg font-semibold">17.1 When planning is required</h3>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          Planning is mandatory for any request that meets at least one of these conditions:
+        </p>
+        <ul className="list-disc ml-6 text-sm space-y-1">
+          <li>It changes content, settings or configuration in any system.</li>
+          <li>It creates new entities such as pages, products or campaigns.</li>
+          <li>It deletes or overwrites something that already exists.</li>
+          <li>It affects multiple parts of a project or several projects at once.</li>
+          <li>It clearly requires more than one step to reach a useful result.</li>
+          <li>It involves several agents or several panels.</li>
+          <li>It needs user choices such as format, layout or strategy path.</li>
+        </ul>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          Simple informational questions can bypass the protocol and be answered directly.  
+          As soon as a request looks like a real task or a mini project, the Supervisor switches into planning mode.
+        </p>
+
+        <h3 className="text-lg font-semibold">17.2 Pre plan construction by the Supervisor</h3>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          In planning mode Hans builds an internal pre plan before talking to the user about execution.  
+          This pre plan is not yet a run or a list of tasks in the database.  
+          It is a structured outline that captures what would be needed to do this job properly.
+        </p>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          The pre plan should capture at least:
+        </p>
+        <ul className="list-disc ml-6 text-sm space-y-1">
+          <li>Goal, what the user is really trying to achieve.</li>
+          <li>Requirements, information and assets needed to succeed.</li>
+          <li>Unknowns, questions and assumptions that must be resolved.</li>
+          <li>Dependencies, steps that rely on previous steps or other agents.</li>
+          <li>Subtasks, concrete actions that will later become tasks in a run.</li>
+          <li>Agents, which roles should own which subtasks.</li>
+          <li>Risks, including any irreversible moves or possible breakage.</li>
+          <li>Forks, alternate paths or strategies that could serve the user better.</li>
+        </ul>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          Hans then turns this pre plan into a user facing explanation and uses it to guide the next questions.
+        </p>
+
+        <h3 className="text-lg font-semibold">17.3 Requirements gathering and clarification</h3>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          After the pre plan is ready, the system asks for missing information.  
+          The questions must be grouped and as compact as possible, not scattered across many small prompts.
+        </p>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          The flow is:
+        </p>
+        <ol className="list-decimal ml-6 text-sm space-y-1">
+          <li>Show the user a short description of the goal and what is needed.</li>
+          <li>List the missing items in a clear list, for example title, slug, layout choice, language scope.</li>
+          <li>Ask focused questions to fill those gaps.</li>
+          <li>Apply defaults where the project context already suggests a sensible choice.</li>
+          <li>Repeat only for the items that remain unclear.</li>
+        </ol>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          As answers arrive, Hans updates the plan and these decisions are reflected in the eventual run summary.
+        </p>
+
+        <h3 className="text-lg font-semibold">17.4 Forks and suggested paths</h3>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          Before anything is locked in, the system suggests one or more paths that match the user goals and the project maturity.  
+          Each path is a small strategy choice for how the work will be done.
+        </p>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          Typical examples for a new page:
+        </p>
+        <ul className="list-disc ml-6 text-sm space-y-1">
+          <li>
+            <span className="font-semibold">Path A, quick placeholder</span>  
+            Create a basic page with a simple layout and placeholder text.  
+            Minimal effort, good for bootstrapping.
+          </li>
+          <li>
+            <span className="font-semibold">Path B, full content and SEO</span>  
+            Involve Creative and Growth to write a full draft, then Web Engineer to build the layout and basic SEO structure.
+          </li>
+          <li>
+            <span className="font-semibold">Path C, full service landing</span>  
+            Design a richer layout with hero, proof elements and call to action, which needs more time but gives higher conversion potential.
+          </li>
+        </ul>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          The user chooses one path.  
+          That choice is stored so that later runs can align with the same preference when appropriate.
+        </p>
+
+        <h3 className="text-lg font-semibold">17.5 Final confirmation before run creation</h3>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          Only after requirements and path are clear does the system create a run and tasks.  
+          Before that point, nothing is written as execution work in the database.
+        </p>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          The confirmation should include:
+        </p>
+        <ul className="list-disc ml-6 text-sm space-y-1">
+          <li>A short statement of the goal.</li>
+          <li>The chosen path or fork.</li>
+          <li>The key requirements and how they were set.</li>
+          <li>The agents that will be involved.</li>
+          <li>The main subtasks that will appear in the run.</li>
+          <li>Any irreversible actions and how they will be handled.</li>
+        </ul>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          The user can approve or ask for a change.  
+          Once approved, the plan becomes an AssistantRun with associated AssistantTask entries according to the contracts defined earlier.
+        </p>
+
+        <h3 className="text-lg font-semibold">17.6 Relation to the assistant laws</h3>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          The planning protocol exists mainly to enforce the four assistant laws in a predictable way.
+        </p>
+        <ul className="list-disc ml-6 text-sm space-y-1">
+          <li>
+            <span className="font-semibold">Allowed scope</span>  
+            During planning Hans checks every future task type against the project capabilities and tenant permissions before it is ever created.
+          </li>
+          <li>
+            <span className="font-semibold">Clarity</span>  
+            The requirements list and clarification questions are the concrete way of enforcing no work without critical inputs.
+          </li>
+          <li>
+            <span className="font-semibold">Transparency</span>  
+            The pre plan, the paths and the final summary are all visible to the user and logged as experience events.
+          </li>
+          <li>
+            <span className="font-semibold">No return</span>  
+            Irreversible actions are identified in the plan and clearly called out in the confirmation step.  
+            A run that contains an irreversible task cannot start until the user has explicitly accepted this in the planning summary.
+          </li>
+        </ul>
+
+        <h3 className="text-lg font-semibold">17.7 Example flow for a new Services page</h3>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          This example illustrates how the protocol plays out for a concrete request.
+        </p>
+        <ol className="list-decimal ml-6 text-sm space-y-1">
+          <li>
+            User writes in the assistant panel, for example  
+            create a new webpage called Services for this site.
+          </li>
+          <li>
+            Supervisor detects that this is a content creation request that will change the CMS, so planning mode is activated.
+          </li>
+          <li>
+            Hans builds a pre plan that lists requirements such as title, slug, layout, sections, language scope, menu placement, SEO basics and publication target (staging or live).
+          </li>
+          <li>
+            Hans asks the user a small set of focused questions to fill what is missing, for example whether this page is bilingual, whether it goes in the main menu and whether the user wants a quick placeholder or a full draft.
+          </li>
+          <li>
+            Hans proposes three paths, quick placeholder, full content and SEO or full landing layout, and recommends one based on project maturity.
+          </li>
+          <li>
+            User chooses full content and SEO path.  
+            Hans updates the plan to involve Creative, Growth and Web Engineer.
+          </li>
+          <li>
+            Supervisor presents a final summary, with goal, chosen path, key requirements and the list of subtasks for each agent, then asks for confirmation.
+          </li>
+          <li>
+            After approval, Supervisor creates an AssistantRun and the AssistantTask entries, for example:
+            <ul className="list-disc ml-6 mt-1 space-y-1">
+              <li>Creative drafts the section structure and base copy.</li>
+              <li>Growth prepares initial SEO targets and meta suggestions.</li>
+              <li>Web Engineer creates the page in WordPress using the chosen template and injects the content.</li>
+              <li>Supervisor reviews the result and either publishes to live or leaves it in staging with a summary to the user.</li>
+            </ul>
+          </li>
+          <li>
+            The run executes according to the execution model and all planning steps remain visible in the experience timeline for that conversation.
+          </li>
+        </ol>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          This protocol makes the assistant panel feel like a real project manager instead of a direct command line.  
+          Every meaningful action has a traceable intent, a clear plan and a visible list of work before anything touches a live system.
+        </p>
       </section>
     </div>
   );

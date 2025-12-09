@@ -51,7 +51,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ settings: existing.settings || DEFAULT_SETTINGS });
     }
 
-    // If not found, create default entry
+    // Check if error is because table doesn't exist (code 42P01) or row doesn't exist
+    if (fetchError && fetchError.code !== "PGRST116") {
+      // PGRST116 = no rows returned (expected when creating new)
+      // Other errors might be table doesn't exist or other issues
+      console.error("Error fetching project_settings:", fetchError);
+      return NextResponse.json(
+        { 
+          error: "Database error", 
+          details: fetchError.message,
+          hint: "The project_settings table may not exist. Please create it first."
+        },
+        { status: 500 }
+      );
+    }
+
+    // If not found (PGRST116), create default entry
     const { data: newSettings, error: createError } = await supabase
       .from("project_settings")
       .insert({
@@ -62,8 +77,13 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (createError) {
+      console.error("Error creating project_settings:", createError);
       return NextResponse.json(
-        { error: "Failed to create default settings", details: createError.message },
+        { 
+          error: "Failed to create default settings", 
+          details: createError.message,
+          hint: "The project_settings table may not exist. Please create it first."
+        },
         { status: 500 }
       );
     }
