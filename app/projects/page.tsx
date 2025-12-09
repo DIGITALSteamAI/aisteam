@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import PageWrapper from "../components/PageWrapper";
 import CmsIcon from "./modules/CmsIcon";
 import ProjectSettingsModal from "../components/projects/ProjectSettingsModal";
@@ -176,6 +177,8 @@ function CardsView({
   projects: Project[]; 
   onSettingsClick: (projectId: string) => void;
 }) {
+  const router = useRouter();
+  
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 
@@ -198,19 +201,18 @@ function CardsView({
           </div>
 
           <div className="flex gap-2">
-            <Link
-              href={`/projects/${project.id}`}
-              className="px-3 py-1.5 bg-slate-200 text-slate-700 rounded-full text-xs hover:bg-slate-300 transition"
-              onClick={(e) => {
-                // Ensure navigation works
-                if (!project.id) {
-                  e.preventDefault();
+            <button
+              onClick={() => {
+                if (project.id) {
+                  router.push(`/projects/${project.id}`);
+                } else {
                   console.error("Project ID is missing");
                 }
               }}
+              className="px-3 py-1.5 bg-slate-200 text-slate-700 rounded-full text-xs hover:bg-slate-300 transition"
             >
               Open project
-            </Link>
+            </button>
 
             <button
               onClick={() => onSettingsClick(project.id)}
@@ -234,6 +236,8 @@ function ListView({
   projects: Project[]; 
   onSettingsClick: (projectId: string) => void;
 }) {
+  const router = useRouter();
+  
   return (
     <section className="bg-white rounded-xl shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
