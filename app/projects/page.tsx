@@ -27,6 +27,7 @@ export default function ProjectsPage() {
   const [sortBy, setSortBy] = useState<SortMode>("name");
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [settingsProjectId, setSettingsProjectId] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadProjects() {
@@ -97,9 +98,16 @@ export default function ProjectsPage() {
       />
 
       {isCards ? (
-        <CardsView projects={visibleProjects} />
+        <CardsView projects={visibleProjects} onSettingsClick={setSettingsProjectId} />
       ) : (
-        <ListView projects={visibleProjects} />
+        <ListView projects={visibleProjects} onSettingsClick={setSettingsProjectId} />
+      )}
+
+      {settingsProjectId && (
+        <ProjectSettingsModal
+          projectId={settingsProjectId}
+          onClose={() => setSettingsProjectId(null)}
+        />
       )}
     </PageWrapper>
   );
@@ -159,7 +167,13 @@ function ProjectToolbar({ view, setView, filter, setFilter, sortBy, setSortBy }:
   );
 }
 
-function CardsView({ projects }: { projects: Project[] }) {
+function CardsView({ 
+  projects, 
+  onSettingsClick 
+}: { 
+  projects: Project[]; 
+  onSettingsClick: (projectId: string) => void;
+}) {
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 
@@ -189,12 +203,12 @@ function CardsView({ projects }: { projects: Project[] }) {
               Open project
             </Link>
 
-            <Link
-              href={`/projects/${project.id}/settings`}
+            <button
+              onClick={() => onSettingsClick(project.id)}
               className="px-3 py-1.5 bg-slate-200 text-xs rounded-full hover:bg-slate-300"
             >
               Settings
-            </Link>
+            </button>
           </div>
 
         </div>
@@ -204,7 +218,13 @@ function CardsView({ projects }: { projects: Project[] }) {
   );
 }
 
-function ListView({ projects }: { projects: Project[] }) {
+function ListView({ 
+  projects, 
+  onSettingsClick 
+}: { 
+  projects: Project[]; 
+  onSettingsClick: (projectId: string) => void;
+}) {
   return (
     <section className="bg-white rounded-xl shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
@@ -238,12 +258,12 @@ function ListView({ projects }: { projects: Project[] }) {
                     >
                       Open
                     </Link>
-                    <Link
-                      href={`/projects/${project.id}/settings`}
+                    <button
+                      onClick={() => onSettingsClick(project.id)}
                       className="text-xs px-3 py-1 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200"
                     >
                       Settings
-                    </Link>
+                    </button>
                   </div>
                 </td>
 

@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export default function KBProjectDetailsPage() {
   return (
     <div className="bg-white border rounded-xl p-8 text-slate-800 space-y-10">
@@ -138,6 +140,20 @@ app/api/projects/[id]/panels/performance/route.ts
 app/api/projects/[id]/panels/web_design/route.ts
 app/api/projects/settings/trend/route.ts
         </pre>
+
+        <h3 className="text-lg font-semibold mb-2 mt-4">Related pages</h3>
+        <ul className="ml-4 list-disc text-sm space-y-1">
+          <li>
+            <Link href="/kb/projects/project-listings" className="text-blue-600 hover:underline">
+              Project Listings
+            </Link>
+          </li>
+          <li>
+            <Link href="/kb/projects/project-details/project-settings" className="text-blue-600 hover:underline">
+              Project Settings
+            </Link>
+          </li>
+        </ul>
       </section>
 
       {/* FUTURE */}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import PageWrapper from "../../components/PageWrapper";
 import CmsIcon from "../modules/CmsIcon";
@@ -213,8 +214,16 @@ export default function ProjectDashboardPage() {
             <p className="text-sm text-slate-600">{domain}</p>
           </div>
 
-          <div className="w-12 h-12 border rounded-full flex items-center justify-center bg-white">
-            <CmsIcon cmsType={cmsType} />
+          <div className="flex items-center gap-3">
+            <Link
+              href={`/projects/${project.id}/settings`}
+              className="px-3 py-1.5 text-sm rounded-md bg-slate-100 text-slate-700 hover:bg-slate-200"
+            >
+              Settings
+            </Link>
+            <div className="w-12 h-12 border rounded-full flex items-center justify-center bg-white">
+              <CmsIcon cmsType={cmsType} />
+            </div>
           </div>
         </div>
       </section>

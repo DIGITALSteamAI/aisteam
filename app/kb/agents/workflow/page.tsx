@@ -10,10 +10,11 @@ export default function AssistantSystemBiblePage() {
         </h1>
         <p className="text-sm leading-relaxed max-w-3xl">
           This document is the complete reference for the AISTEAM assistant system.  
-          It describes the architecture, workflows, routing and validation rules, project context handling, execution model, logging and experience tracking, UI behavior and error handling for the centralized assistant panel and its agents.
+          It describes the architecture, parallel multi agent runs, routing and validation rules, project context handling, execution model, logging and experience tracking, UI behavior and error handling for the centralized assistant panel and its agents.
         </p>
         <p className="text-sm leading-relaxed max-w-3xl">
-          Use this as the source of truth when building or refactoring the assistant panel, the agent routing logic, the assistant API routes and the related database tables.
+          Use this as the source of truth when building or refactoring the assistant panel, the agent routing logic, the assistant API routes and the related database tables.  
+          The system is governed by four assistant laws that apply to every task and every run.
         </p>
       </header>
 
@@ -109,7 +110,7 @@ export default function AssistantSystemBiblePage() {
         <h2 className="text-xl font-semibold">1. Purpose and Scope</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           The assistant system in AISTEAM is the central intelligence that works across projects, tenants and panels.  
-          It offers a single assistant panel where the user can talk to a set of agents that collaborate to plan and execute work.
+          It offers a single assistant panel where the user can talk to a set of agents that collaborate to plan and execute work, often in parallel runs that involve several agents at the same time.
         </p>
         <p className="text-sm leading-relaxed max-w-3xl">
           This Bible describes how that system behaves in detail.  
@@ -117,7 +118,7 @@ export default function AssistantSystemBiblePage() {
         </p>
         <ul className="list-disc ml-6 text-sm space-y-1">
           <li>Audience, engineers, AI configuration, product design and future agents</li>
-          <li>Scope, assistant panel, chat, routing, execution, logging and experience</li>
+          <li>Scope, assistant panel, chat, routing, parallel runs, execution, logging and experience</li>
           <li>Out of scope, billing, authentication and general app layout that is not related to the assistant workflow</li>
         </ul>
       </section>
@@ -155,6 +156,18 @@ export default function AssistantSystemBiblePage() {
             </dd>
           </div>
           <div>
+            <dt className="font-semibold">Run</dt>
+            <dd className="text-slate-700">
+              A structured multi step response to a user intent that can involve several agents and tasks in parallel. All tasks in a run share a run identifier.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold">Run step group</dt>
+            <dd className="text-slate-700">
+              A phase inside a run that can contain one or more tasks that are allowed to execute in parallel before the next phase unlocks.
+            </dd>
+          </div>
+          <div>
             <dt className="font-semibold">Task</dt>
             <dd className="text-slate-700">
               A structured action that can be executed. For example create a page in WordPress, update a product, or create an internal task.
@@ -163,7 +176,7 @@ export default function AssistantSystemBiblePage() {
           <div>
             <dt className="font-semibold">Experience</dt>
             <dd className="text-slate-700">
-              The sequence of visible messages and status events that the user sees for a given conversation. Includes text, status bubbles and progress states.
+              The sequence of visible messages and status events that the user sees for a given conversation or run. Includes text, status bubbles and progress states.
             </dd>
           </div>
           <div>
@@ -178,6 +191,12 @@ export default function AssistantSystemBiblePage() {
               The process that decides which agent is responsible for a specific user request or part of a request.
             </dd>
           </div>
+          <div>
+            <dt className="font-semibold">Assistant laws</dt>
+            <dd className="text-slate-700">
+              The core rules that govern all runs and tasks, including allowed scope, clarity of inputs, transparency of actions and the law of no return for reversibility and explicit consent.
+            </dd>
+          </div>
         </dl>
       </section>
 
@@ -188,23 +207,23 @@ export default function AssistantSystemBiblePage() {
           The assistant system sits between the front end assistant panel, the AI model, the Supabase database and any external platforms such as WordPress or WooCommerce.
         </p>
         <p className="text-sm leading-relaxed max-w-3xl">
-          At a high level the flow looks like this.
+          At a high level the flow looks like this for multi step work. Simple questions can still be answered directly without a full run.
         </p>
         <pre className="bg-slate-900 text-slate-100 text-xs rounded p-4 overflow-x-auto">
           {`flowchart TD
   U[User in assistant panel] --> C[Assistant chat API]
   C --> S[Supervisor logic]
-  S --> A1[Selected agent]
-  A1 -->|advice only| R[Response to user]
-  A1 -->|needs action| X[Execution API]
-  X --> E[External systems and platforms]
-  E --> X
-  X --> S
-  S --> R
-  R --> U`}
+  S --> P[Plan run and steps]
+  P --> R1[Run with parallel tasks]
+  R1 --> T[Execution API]
+  T --> E[External systems and platforms]
+  E --> T
+  T --> S
+  S --> ANS[Final consolidated answer]
+  ANS --> U`}
         </pre>
         <p className="text-sm leading-relaxed max-w-3xl">
-          The Supervisor always remains in the loop. Even when a request is delegated to another agent, the Supervisor validates the result before sending the final message to the user.
+          The Supervisor always remains in the loop. For complex requests Hans creates a run that may involve several agents and tasks in parallel, then validates the combined result before sending the final message to the user.
         </p>
       </section>
 
@@ -221,12 +240,15 @@ export default function AssistantSystemBiblePage() {
           <li>User enters a message in the assistant panel and clicks send.</li>
           <li>Front end sends request to the assistant chat API with conversation id, active agent id and project context.</li>
           <li>API loads conversation history and context from the database.</li>
-          <li>Supervisor evaluates the new message and decides routing.</li>
-          <li>Selected agent processes the request and either answers directly or calls the execution API.</li>
-          <li>If execution is needed, a task is created and executed or queued.</li>
-          <li>Supervisor validates the agent output and builds the final user response.</li>
-          <li>API saves new messages and status events in the database.</li>
-          <li>Front end updates the conversation and any visible status indicators.</li>
+          <li>Supervisor evaluates the new message and classifies it as a simple answer or a multi step run.</li>
+          <li>If simple, Supervisor chooses the best agent and that agent prepares a direct answer.</li>
+          <li>If a run is needed, Supervisor builds a plan and creates an AssistantRun record that groups the work.</li>
+          <li>The plan is converted into one or more AssistantTask records, possibly grouped into phases with parallel tasks.</li>
+          <li>Each task is checked against the assistant laws before it is allowed to execute.</li>
+          <li>Tasks are executed or queued through the execution API, possibly in parallel where the plan allows it.</li>
+          <li>Supervisor validates the combined agent output and builds the final user response.</li>
+          <li>API saves new messages, status events, run and task updates in the database.</li>
+          <li>Front end updates the conversation, any visible run cards and status indicators.</li>
         </ol>
 
         <h3 className="text-lg font-semibold">4.2 Message types</h3>
@@ -255,13 +277,15 @@ export default function AssistantSystemBiblePage() {
         </p>
         <ul className="list-disc ml-6 text-sm space-y-1">
           <li>Assistant is thinking</li>
-          <li>Hans is passing this request to Web Engineer Nico</li>
+          <li>Hans is planning a multi agent run for this request</li>
+          <li>Growth Lead Dana and Creative Lead Mak are working in parallel</li>
           <li>Creating a new WordPress page in your project</li>
           <li>Task created and queued</li>
+          <li>All tasks in this run are completed</li>
           <li>Final summary of what was done</li>
         </ul>
         <p className="text-sm leading-relaxed max-w-3xl">
-          These experience events should be logged as assistant messages with kind set to status so they can be replayed in the conversation.
+          These experience events should be logged as assistant messages with kind set to status so they can be replayed in the conversation and grouped by run when relevant.
         </p>
       </section>
 
@@ -282,7 +306,7 @@ export default function AssistantSystemBiblePage() {
 
         <h3 className="text-lg font-semibold">5.2 Supervisor routing decision</h3>
         <p className="text-sm leading-relaxed max-w-3xl">
-          The Supervisor uses both the current agent and the message content to decide who should answer.
+          The Supervisor uses both the current agent and the message content to decide who should answer or which agents belong in the run for this request.
         </p>
         <pre className="bg-slate-900 text-slate-100 text-xs rounded p-4 overflow-x-auto">
           {`type AgentId =
@@ -360,11 +384,11 @@ function determineAgent(ctx: RoutingContext): AgentId {
 
         <h3 className="text-lg font-semibold">5.3 Routing visibility for the user</h3>
         <p className="text-sm leading-relaxed max-w-3xl">
-          Whenever the Supervisor changes the agent that will answer a request, the system should create a status message such as:
+          Whenever the Supervisor changes the agent that will answer a request or adds agents to a run, the system should create a status message such as:
         </p>
         <ul className="list-disc ml-6 text-sm space-y-1">
           <li>Hans is handing this off to Web Engineer Nico for implementation.</li>
-          <li>Growth Lead Dana is joining to help with SEO and campaigns.</li>
+          <li>Growth Lead Dana and Creative Lead Mak are joining this run to help with SEO and layout.</li>
         </ul>
         <p className="text-sm leading-relaxed max-w-3xl">
           This keeps the experience understandable for the user and also leaves a clear audit trail in the conversation.
@@ -406,6 +430,29 @@ function determineAgent(ctx: RoutingContext): AgentId {
           <li>Marketing related actions escalate to Growth Lead when budget or strategy questions appear.</li>
           <li>Client communication questions escalate to Client Success Lead.</li>
         </ul>
+
+        <h3 className="text-lg font-semibold">6.4 Assistant laws</h3>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          All runs and tasks must respect four core assistant laws. These apply to every task, even when several tasks run in parallel.
+        </p>
+        <ul className="list-disc ml-6 text-sm space-y-1">
+          <li>
+            <span className="font-semibold">Law of allowed scope</span>  
+            Agents can only perform actions that are allowed for this project and tenant. Task types must be checked against project configuration before execution.
+          </li>
+          <li>
+            <span className="font-semibold">Law of clarity</span>  
+            No task can execute if critical inputs are missing. Agents must either use project context or ask the user for the missing information and confirm the plan before acting.
+          </li>
+          <li>
+            <span className="font-semibold">Law of transparency</span>  
+            Every meaningful step is logged in a way that can be understood later. This includes routing decisions, task creation, status changes and final summaries.
+          </li>
+          <li>
+            <span className="font-semibold">Law of no return</span>  
+            The system should prefer operations that can be rolled back. If an action cannot be rolled back automatically, it must be clearly explained to the user and must receive explicit confirmation before execution. These irreversible actions should be rare and always visible in the logs.
+          </li>
+        </ul>
       </section>
 
       {/* 7. Project Context and Scoping */}
@@ -441,25 +488,43 @@ function determineAgent(ctx: RoutingContext): AgentId {
         <h2 className="text-xl font-semibold">8. Execution Model and Tasks</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           Execution is the part where ideas become changes in external systems.  
-          The assistant uses structured tasks that are sent to a dedicated execution API.
+          The assistant uses structured runs and tasks that are sent to a dedicated execution API.
         </p>
 
-        <h3 className="text-lg font-semibold">8.1 Task contract</h3>
+        <h3 className="text-lg font-semibold">8.1 Run and task contracts</h3>
         <p className="text-sm leading-relaxed max-w-3xl">
-          Every task must follow a common structure so that the execution layer can remain generic.
+          Runs group tasks that belong to the same user intent. Tasks represent individual actions that can be executed, often in parallel inside a run.
         </p>
         <pre className="bg-slate-900 text-slate-100 text-xs rounded p-4 overflow-x-auto">
-          {`interface AssistantTask {
+          {`interface AssistantRun {
   id: string;
   conversationId: string;
   projectId?: string;
+  createdByAgentId: string;      // usually 'chief' for the plan
+  title: string;                 // human readable summary of the run
+  status: "planning" | "running" | "completed" | "failed" | "cancelled";
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface AssistantTask {
+  id: string;
+  runId: string;
+  conversationId: string;
+  projectId?: string;
+  parentTaskId?: string;         // for dependent steps
+  stepGroup?: string;            // phase label for parallel groups, for example "A" or "B"
+  sequenceOrder: number;         // order inside group if needed
   createdByAgentId: string;
   status: "open" | "in_progress" | "completed" | "failed" | "cancelled";
   taskType: string;
   parameters: Record<string, unknown>;
-  summary: string;
+  summary: string;               // human readable description of what this task does
+  isReversibleBySystem: boolean; // true if an automatic rollback is possible
+  irreversibleConfirmedAt?: string;  // timestamp if user accepted a non reversible action
   createdAt: string;
   updatedAt: string;
+  result?: Record<string, unknown>;
 }`}
         </pre>
 
@@ -475,7 +540,7 @@ function determineAgent(ctx: RoutingContext): AgentId {
         <h3 className="text-lg font-semibold">8.3 Execution API usage</h3>
         <p className="text-sm leading-relaxed max-w-3xl">
           Agents never talk directly to external systems.  
-          They call the execution API with a structured payload and let that layer handle integration details.
+          They call the execution API with a structured payload and let that layer handle integration details, including respect for project scope and the law of no return.
         </p>
         <pre className="bg-slate-900 text-slate-100 text-xs rounded p-4 overflow-x-auto">
           {`POST /api/assistant/execute
@@ -483,6 +548,7 @@ function determineAgent(ctx: RoutingContext): AgentId {
 Request body:
 
 {
+  "runId": "uuid",
   "conversationId": "uuid",
   "projectId": "uuid",
   "createdByAgentId": "webEngineer",
@@ -503,7 +569,7 @@ Request body:
         <h2 className="text-xl font-semibold">9. Logging and Experience Model</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           The assistant system must be observable.  
-          Logging is not only for debugging but also for reconstructing the user experience and understanding how agents collaborate.
+          Logging is not only for debugging but also for reconstructing the user experience and understanding how agents collaborate across runs and tasks.
         </p>
 
         <h3 className="text-lg font-semibold">9.1 What gets logged</h3>
@@ -511,13 +577,15 @@ Request body:
           <li>Every user message and assistant message</li>
           <li>Agent id that authored each assistant message</li>
           <li>Routing decision for each user message, including previous and new agent</li>
-          <li>Task creation, updates and completion including execution status</li>
+          <li>Run creation, updates and completion</li>
+          <li>Task creation, updates and completion including execution status and reversibility information</li>
           <li>Important system events such as missing configuration or external API errors</li>
         </ul>
 
         <h3 className="text-lg font-semibold">9.2 Experience timeline concept</h3>
         <p className="text-sm leading-relaxed max-w-3xl">
-          For any conversation the system should be able to display a high level timeline of what happened, not only the raw text.
+          For any conversation the system should be able to display a high level timeline of what happened, not only the raw text.  
+          Timelines can be filtered by run so multi agent parallel work stays understandable.
         </p>
         <pre className="bg-slate-900 text-slate-100 text-xs rounded p-4 overflow-x-auto">
           {`[
@@ -525,24 +593,35 @@ Request body:
     "time": "2025-12-09T12:00:00Z",
     "actor": "user",
     "kind": "message",
+    "runId": "run_1",
     "summary": "User asked to create a new service page"
   },
   {
     "time": "2025-12-09T12:00:05Z",
     "actor": "supervisor",
     "kind": "routing",
-    "summary": "Hans delegated implementation to Web Engineer Nico"
+    "runId": "run_1",
+    "summary": "Hans delegated implementation to Web Engineer Nico and Growth Lead Dana"
   },
   {
     "time": "2025-12-09T12:00:10Z",
     "actor": "webEngineer",
     "kind": "task_created",
+    "runId": "run_1",
     "summary": "Task create_page for About service"
   },
   {
-    "time": "2025-12-09T12:00:15Z",
+    "time": "2025-12-09T12:00:12Z",
+    "actor": "growthLead",
+    "kind": "task_created",
+    "runId": "run_1",
+    "summary": "Task run_audit for SEO suggestions"
+  },
+  {
+    "time": "2025-12-09T12:00:20Z",
     "actor": "system",
     "kind": "task_completed",
+    "runId": "run_1",
     "summary": "Page created in WordPress"
   }
 ]`}
@@ -551,7 +630,7 @@ Request body:
         <h3 className="text-lg font-semibold">9.3 Internal reasoning</h3>
         <p className="text-sm leading-relaxed max-w-3xl">
           Internal model reasoning is not stored verbatim for the user, but it can be helpful to keep a compact representation of decisions and plan steps.  
-          This can live in metadata fields on conversations or tasks and can be used later for analysis or retraining.
+          This can live in metadata fields on runs, conversations or tasks and can be used later for analysis or retraining.
         </p>
       </section>
 
@@ -560,7 +639,7 @@ Request body:
         <h2 className="text-xl font-semibold">10. Assistant Panel UI Behavior</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
           The UI of the assistant panel is where users feel the system.  
-          The behavior must be predictable and should make the invisible routing and execution steps easy to understand.
+          The behavior must be predictable and should make the invisible routing, run planning and execution steps easy to understand.
         </p>
 
         <h3 className="text-lg font-semibold">10.1 Layout</h3>
@@ -568,7 +647,7 @@ Request body:
           <li>Left column inside the panel, agent list with avatars and short labels.</li>
           <li>Right area inside the panel, conversation feed and input box.</li>
           <li>Top context bar that shows the current project and tenant.</li>
-          <li>Optional status strip for ongoing tasks or long running operations.</li>
+          <li>Optional status strip or run cards for ongoing multi step runs and long running operations.</li>
         </ul>
 
         <h3 className="text-lg font-semibold">10.2 Agent list behavior</h3>
@@ -584,6 +663,7 @@ Request body:
           <li>User messages aligned to the right or styled differently.</li>
           <li>Assistant messages show the agent avatar that authored them.</li>
           <li>Status entries styled as light system chips such as task created or executing.</li>
+          <li>Runs can be summarized in collapsible blocks that list agents involved, tasks and current status.</li>
           <li>Long explanations can be collapsed with a short summary and an expand control.</li>
         </ul>
 
@@ -593,8 +673,9 @@ Request body:
         </p>
         <ul className="list-disc ml-6 text-sm space-y-1">
           <li>Thinking, the Supervisor or agent is planning a response.</li>
-          <li>Routing, Supervisor is deciding which agent should handle this.</li>
-          <li>Executing, a task is being sent to or processed by an external system.</li>
+          <li>Routing, Supervisor is deciding which agent or agents should handle this.</li>
+          <li>Planning, Hans is creating a multi step run.</li>
+          <li>Executing, one or more tasks are being sent to or processed by external systems.</li>
           <li>Validating, Supervisor is checking the result before answering.</li>
         </ul>
       </section>
@@ -620,6 +701,7 @@ Request body:
           <li>Explain the failure in simple terms without technical overload.</li>
           <li>Whenever possible propose a recovery path in the same message.</li>
           <li>Log enough detail server side so the problem can be reproduced.</li>
+          <li>For irreversible actions, always respect the law of no return with explicit confirmation before execution.</li>
         </ul>
 
         <h3 className="text-lg font-semibold">11.3 Example error responses</h3>
@@ -698,6 +780,7 @@ Response body:
 Request body:
 
 {
+  "runId": "uuid",
   "conversationId": "uuid",
   "projectId": "uuid",
   "createdByAgentId": "webEngineer",
@@ -728,7 +811,7 @@ Response body:
       <section id="database-schema" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">13. Database Schema</h2>
         <p className="text-sm leading-relaxed max-w-3xl">
-          The assistant system relies on a small set of tables that store conversations, messages, tasks and optional agent definitions.
+          The assistant system relies on a small set of tables that store runs, conversations, messages, tasks and optional agent definitions.
         </p>
 
         <h3 className="text-lg font-semibold">13.1 assistant_conversations</h3>
@@ -743,7 +826,20 @@ current_agent  text not null default 'chief'
 metadata       jsonb not null default '{}'`}
         </pre>
 
-        <h3 className="text-lg font-semibold">13.2 assistant_messages</h3>
+        <h3 className="text-lg font-semibold">13.2 assistant_runs</h3>
+        <pre className="bg-slate-900 text-slate-100 text-xs rounded p-4 overflow-x-auto">
+          {`id               uuid primary key
+conversation_id uuid not null references assistant_conversations(id)
+project_id      uuid null
+created_by      text not null       -- usually 'chief'
+title           text not null
+status          text not null       -- 'planning', 'running', 'completed', 'failed', 'cancelled'
+created_at      timestamptz not null default now()
+updated_at      timestamptz not null default now()
+metadata        jsonb not null default '{}'`}
+        </pre>
+
+        <h3 className="text-lg font-semibold">13.3 assistant_messages</h3>
         <pre className="bg-slate-900 text-slate-100 text-xs rounded p-4 overflow-x-auto">
           {`id               uuid primary key
 conversation_id uuid not null references assistant_conversations(id)
@@ -755,29 +851,35 @@ created_at      timestamptz not null default now()
 metadata        jsonb not null default '{}'`}
         </pre>
 
-        <h3 className="text-lg font-semibold">13.3 assistant_tasks</h3>
+        <h3 className="text-lg font-semibold">13.4 assistant_tasks</h3>
         <pre className="bg-slate-900 text-slate-100 text-xs rounded p-4 overflow-x-auto">
-          {`id               uuid primary key
-conversation_id uuid not null references assistant_conversations(id)
-project_id      uuid null
-created_by      text not null       -- agent id
-status          text not null       -- 'open' or 'in_progress' or 'completed' or 'failed' or 'cancelled'
-task_type       text not null
-parameters      jsonb not null
-summary         text not null
-created_at      timestamptz not null default now()
-updated_at      timestamptz not null default now()
-result          jsonb null`}
+          {`id                       uuid primary key
+run_id                   uuid not null references assistant_runs(id)
+conversation_id          uuid not null references assistant_conversations(id)
+project_id               uuid null
+parent_task_id           uuid null references assistant_tasks(id)
+step_group               text null          -- phase label for parallel groups
+sequence_order           integer not null default 0
+created_by               text not null      -- agent id
+status                   text not null      -- 'open', 'in_progress', 'completed', 'failed', 'cancelled'
+task_type                text not null
+parameters               jsonb not null
+summary                  text not null
+is_reversible_by_system  boolean not null default true
+irreversible_confirmed_at timestamptz null
+created_at               timestamptz not null default now()
+updated_at               timestamptz not null default now()
+result                   jsonb null`}
         </pre>
 
-        <h3 className="text-lg font-semibold">13.4 assistant_agent_definitions (optional)</h3>
+        <h3 className="text-lg font-semibold">13.5 assistant_agent_definitions (optional)</h3>
         <pre className="bg-slate-900 text-slate-100 text-xs rounded p-4 overflow-x-auto">
           {`id            uuid primary key
 tenant_id     uuid null             -- null for global agent definitions
 agent_id      text not null         -- 'chief', 'webEngineer', etc
 display_name  text not null
 role_summary  text not null
-category      text not null         -- 'supervisor' or 'lead' or 'execution' or 'utility'
+category      text not null         -- 'supervisor', 'lead', 'execution', 'utility'
 visible       boolean not null default true
 ordering      integer not null default 0
 avatar        jsonb not null default '{}'
@@ -800,7 +902,7 @@ config        jsonb not null default '{}'`}
 
         <h3 className="text-lg font-semibold">14.2 Use small, typed helpers</h3>
         <p className="text-sm leading-relaxed max-w-3xl">
-          Wrap common operations in small helpers such as loadConversation, buildProjectContext or createAssistantTask.  
+          Wrap common operations in small helpers such as loadConversation, buildProjectContext, createAssistantRun or createAssistantTask.  
           This keeps the main route handlers readable and reduces errors.
         </p>
 
@@ -812,7 +914,7 @@ config        jsonb not null default '{}'`}
 
         <h3 className="text-lg font-semibold">14.4 Align names across layers</h3>
         <p className="text-sm leading-relaxed max-w-3xl">
-          Agent ids, task types and status values should have the same names in:
+          Agent ids, task types, run statuses and task statuses should have the same names in:
         </p>
         <ul className="list-disc ml-6 text-sm space-y-1">
           <li>Database tables</li>
@@ -846,7 +948,7 @@ config        jsonb not null default '{}'`}
 
         <h3 className="text-lg font-semibold">15.3 Experience dashboards</h3>
         <ul className="list-disc ml-6 text-sm space-y-1">
-          <li>Show a history of assistant conversations and tasks for each project.</li>
+          <li>Show a history of assistant conversations, runs and tasks for each project.</li>
           <li>Visualize progress of automation over time.</li>
           <li>Surface common issues so that base configuration can be improved.</li>
         </ul>
@@ -863,6 +965,7 @@ config        jsonb not null default '{}'`}
           <li>app/api/assistant/chat/route.ts, chat API route and routing logic</li>
           <li>app/api/assistant/execute/route.ts, execution API route</li>
           <li>supabase/migrations/assistant_conversations.sql, conversations table</li>
+          <li>supabase/migrations/assistant_runs.sql, runs table</li>
           <li>supabase/migrations/assistant_messages.sql, messages table</li>
           <li>supabase/migrations/assistant_tasks.sql, tasks table</li>
           <li>supabase/migrations/assistant_agent_definitions.sql, optional agent catalog</li>

@@ -67,6 +67,11 @@ export default function KBHomePage() {
                       Agency Panel
                     </Link>
                   </li>
+                  <li>
+                    <Link href="/kb/projects/project-details/project-settings" className="text-blue-600 hover:underline">
+                      Project Settings
+                    </Link>
+                  </li>
                 </ul>
               </li>
             </ul>

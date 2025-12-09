@@ -1,0 +1,154 @@
+import { NextRequest, NextResponse } from "next/server";
+import { supabaseServer as supabase } from "@/lib/supabaseServer";
+
+// Default settings structure
+const DEFAULT_SETTINGS = {
+  general: {
+    name: "",
+    description: "",
+    client: "",
+    status: "active"
+  },
+  domains: {
+    primary: "",
+    staging: "",
+    development: []
+  },
+  hosting: {
+    provider: "",
+    region: "",
+    ssl_enabled: true
+  },
+  agent_defaults: {
+    default_agent: "chief",
+    allowed_task_types: [],
+    auto_execute: false
+  },
+  feature_flags: {}
+};
+
+export async function GET(request: NextRequest) {
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    const projectId = searchParams.get("projectId");
+
+    if (!projectId) {
+      return NextResponse.json(
+        { error: "Missing projectId parameter" },
+        { status: 400 }
+      );
+    }
+
+    // Try to fetch existing settings
+    const { data: existing, error: fetchError } = await supabase
+      .from("project_settings")
+      .select("*")
+      .eq("project_id", projectId)
+      .single();
+
+    // If settings exist, return them
+    if (existing && !fetchError) {
+      return NextResponse.json({ settings: existing.settings || DEFAULT_SETTINGS });
+    }
+
+    // If not found, create default entry
+    const { data: newSettings, error: createError } = await supabase
+      .from("project_settings")
+      .insert({
+        project_id: projectId,
+        settings: DEFAULT_SETTINGS
+      })
+      .select()
+      .single();
+
+    if (createError) {
+      return NextResponse.json(
+        { error: "Failed to create default settings", details: createError.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ settings: newSettings.settings || DEFAULT_SETTINGS });
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: "Unhandled server error", details: String(err) },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { projectId, updates } = body;
+
+    if (!projectId) {
+      return NextResponse.json(
+        { error: "Missing projectId in request body" },
+        { status: 400 }
+      );
+    }
+
+    if (!updates || typeof updates !== "object") {
+      return NextResponse.json(
+        { error: "Missing or invalid updates object" },
+        { status: 400 }
+      );
+    }
+
+    // Fetch current settings
+    const { data: current, error: fetchError } = await supabase
+      .from("project_settings")
+      .select("settings")
+      .eq("project_id", projectId)
+      .single();
+
+    // If no existing record, create one with defaults
+    const currentSettings = current?.settings || DEFAULT_SETTINGS;
+
+    // Deep merge updates into current settings
+    const mergedSettings = {
+      general: { ...currentSettings.general, ...(updates.general || {}) },
+      domains: { ...currentSettings.domains, ...(updates.domains || {}) },
+      hosting: { ...currentSettings.hosting, ...(updates.hosting || {}) },
+      agent_defaults: { ...currentSettings.agent_defaults, ...(updates.agent_defaults || {}) },
+      feature_flags: { ...currentSettings.feature_flags, ...(updates.feature_flags || {}) }
+    };
+
+    // Handle nested arrays (like development domains)
+    if (updates.domains?.development !== undefined) {
+      mergedSettings.domains.development = updates.domains.development;
+    }
+
+    // Upsert the settings
+    const { data: updated, error: updateError } = await supabase
+      .from("project_settings")
+      .upsert({
+        project_id: projectId,
+        settings: mergedSettings,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: "project_id"
+      })
+      .select()
+      .single();
+
+    if (updateError) {
+      return NextResponse.json(
+        { error: "Failed to update settings", details: updateError.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      ok: true,
+      settings: updated.settings
+    });
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: "Unhandled server error", details: String(err) },
+      { status: 500 }
+    );
+  }
+}
+
