@@ -106,6 +106,7 @@ export default function ProjectsPage() {
 
       {settingsProjectId && (
         <ProjectSettingsModal
+          key={settingsProjectId}
           projectId={settingsProjectId}
           onClose={() => setSettingsProjectId(null)}
         />
