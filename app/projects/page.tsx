@@ -202,14 +202,17 @@ function CardsView({
 
           <div className="flex gap-2">
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 if (project.id) {
-                  router.push(`/projects/${project.id}`);
+                  console.log("Navigating to project:", project.id);
+                  window.location.href = `/projects/${project.id}`;
                 } else {
                   console.error("Project ID is missing");
                 }
               }}
-              className="px-3 py-1.5 bg-slate-200 text-slate-700 rounded-full text-xs hover:bg-slate-300 transition"
+              className="px-3 py-1.5 bg-slate-200 text-slate-700 rounded-full text-xs hover:bg-slate-300 transition cursor-pointer"
             >
               Open project
             </button>
