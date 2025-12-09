@@ -567,7 +567,41 @@ interface AssistantTask {
         </pre>
 
         <h3 className="text-lg font-semibold">8.2 Typical task types</h3>
-        <
+        <ul className="list-disc ml-6 text-sm space-y-1">
+          <li>create_page, create or update a CMS page</li>
+          <li>update_content_block, update part of a page or template</li>
+          <li>create_product, create or update an ecommerce product</li>
+          <li>create_ticket, create a ticket in the internal ticketing panel</li>
+          <li>run_audit, request a performance or SEO audit</li>
+        </ul>
+
+        <h3 className="text-lg font-semibold">8.3 Execution API usage</h3>
+        <p className="text-sm leading-relaxed max-w-3xl">
+          Agents never talk directly to external systems.  
+          They call the execution API with a structured payload and let that layer handle integration details, including respect for project scope and the law of no return.
+        </p>
+        <pre className="bg-slate-900 text-slate-100 text-xs rounded p-4 overflow-x-auto">
+          {`POST /api/assistant/execute
+
+Request body:
+
+{
+  "runId": "uuid",
+  "conversationId": "uuid",
+  "projectId": "uuid",
+  "createdByAgentId": "webEngineer",
+  "taskType": "create_page",
+  "parameters": {
+    "cms": "wordpress",
+    "title": "About Aquaverter",
+    "slug": "about-aquaverter",
+    "contentHtml": "<h1>About Aquaverter</h1>..."
+  },
+  "summary": "Create new About page for Aquaverter site"
+}`}
+        </pre>
+      </section>
+
       {/* 7. Project Context and Scoping */}
       <section id="project-context-and-scoping" className="space-y-4 scroll-mt-8">
         <h2 className="text-xl font-semibold">7. Project Context and Scoping</h2>
