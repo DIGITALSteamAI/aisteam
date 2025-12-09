@@ -265,12 +265,18 @@ function ListView({
 
                 <td className="px-4 py-2 text-right">
                   <div className="inline-flex gap-2">
-                    <Link
-                      href={`/projects/${project.id}`}
-                      className="text-xs px-3 py-1 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    <button
+                      onClick={() => {
+                        if (project.id) {
+                          router.push(`/projects/${project.id}`);
+                        } else {
+                          console.error("Project ID is missing");
+                        }
+                      }}
+                      className="text-xs px-3 py-1 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
                     >
                       Open
-                    </Link>
+                    </button>
                     <button
                       onClick={() => onSettingsClick(project.id)}
                       className="text-xs px-3 py-1 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200"
