@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import PageWrapper from "../../components/PageWrapper";
+import ListingLayout from "../../components/listing/ListingLayout";
 
 type Contact = {
   id: string;
@@ -21,14 +21,32 @@ type Client = {
   name: string;
 };
 
+type FilterMode = "all" | "primary" | "by-client";
+type SortMode = "name-asc" | "name-desc" | "recent";
+
 export default function ContactsPage() {
   const [contacts, setContacts] = useState<(Contact & { client?: Client })[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<FilterMode>("all");
+  const [selectedClientId, setSelectedClientId] = useState<string>("");
+  const [sortBy, setSortBy] = useState<SortMode>("name-asc");
   const router = useRouter();
 
   useEffect(() => {
     loadContacts();
+    loadClients();
   }, []);
+
+  async function loadClients() {
+    try {
+      const res = await fetch("/api/clients");
+      const json = await res.json();
+      setClients(json.clients || []);
+    } catch (err) {
+      console.error("Failed to load clients:", err);
+    }
+  }
 
   async function loadContacts() {
     try {
@@ -72,28 +90,177 @@ export default function ContactsPage() {
     }
   }
 
+  const visibleContacts = useMemo(() => {
+    let list = [...contacts];
+
+    // Apply filter
+    if (filter === "primary") {
+      list = list.filter(c => c.is_primary);
+    } else if (filter === "by-client" && selectedClientId) {
+      list = list.filter(c => c.client_id === selectedClientId);
+    }
+
+    // Apply sort
+    list.sort((a, b) => {
+      if (sortBy === "name-asc") {
+        const aName = `${a.last_name} ${a.first_name}`.toLowerCase();
+        const bName = `${b.last_name} ${b.first_name}`.toLowerCase();
+        return aName.localeCompare(bName);
+      }
+      if (sortBy === "name-desc") {
+        const aName = `${a.last_name} ${a.first_name}`.toLowerCase();
+        const bName = `${b.last_name} ${b.first_name}`.toLowerCase();
+        return bName.localeCompare(aName);
+      }
+      // For recent, we'd need updated_at - using name as fallback
+      const aName = `${a.last_name} ${a.first_name}`.toLowerCase();
+      const bName = `${b.last_name} ${b.first_name}`.toLowerCase();
+      return aName.localeCompare(bName);
+    });
+
+    return list;
+  }, [contacts, filter, selectedClientId, sortBy]);
+
   if (loading) {
     return (
-      <PageWrapper title="Contacts">
-        <div className="bg-white border rounded-xl p-8 text-center text-slate-600">
-          Loading contacts...
-        </div>
-      </PageWrapper>
+      <ListingLayout
+        title="Contacts"
+        infoPageKey="contacts-listing"
+        filters={<div />}
+        sorts={<div />}
+        cardView={<div className="p-6 text-center text-slate-500">Loading contacts...</div>}
+        listView={<div className="p-6 text-center text-slate-500">Loading contacts...</div>}
+      />
     );
   }
 
-  return (
-    <PageWrapper title="Contacts" infoPage="contacts-listing">
-      <div className="mb-6 flex justify-end">
-        <button
-          onClick={() => router.push("/crm/contacts/new")}
-          className="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition"
+  const filters = (
+    <div className="flex items-center gap-2">
+      <div className="flex items-center px-2 py-1 bg-white border rounded">
+        <select
+          className="bg-transparent text-sm outline-none text-slate-700 cursor-pointer"
+          value={filter}
+          onChange={e => {
+            setFilter(e.target.value as FilterMode);
+            if (e.target.value !== "by-client") {
+              setSelectedClientId("");
+            }
+          }}
         >
-          Add Contact
-        </button>
+          <option value="all">All contacts</option>
+          <option value="primary">Primary only</option>
+          <option value="by-client">By client</option>
+        </select>
       </div>
+      {filter === "by-client" && (
+        <div className="flex items-center px-2 py-1 bg-white border rounded">
+          <select
+            className="bg-transparent text-sm outline-none text-slate-700 cursor-pointer"
+            value={selectedClientId}
+            onChange={e => setSelectedClientId(e.target.value)}
+          >
+            <option value="">Select client</option>
+            {clients.map(client => (
+              <option key={client.id} value={client.id}>{client.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
+    </div>
+  );
 
-      <div className="bg-white border rounded-xl overflow-hidden">
+  const sorts = (
+    <div className="flex items-center px-2 py-1 bg-white border rounded">
+      <select
+        className="bg-transparent text-sm outline-none text-slate-700 cursor-pointer"
+        value={sortBy}
+        onChange={e => setSortBy(e.target.value as SortMode)}
+      >
+        <option value="name-asc">Name A to Z</option>
+        <option value="name-desc">Name Z to A</option>
+        <option value="recent">Recently edited</option>
+      </select>
+    </div>
+  );
+
+  return (
+    <ListingLayout
+      title="Contacts"
+      infoPageKey="contacts-listing"
+      storageKey="contactsView"
+      filters={filters}
+      sorts={sorts}
+      cardView={<ContactsCardsView contacts={visibleContacts} router={router} />}
+      listView={<ContactsListView contacts={visibleContacts} router={router} />}
+    />
+  );
+}
+
+function ContactsCardsView({ contacts, router }: { contacts: (Contact & { client?: Client })[]; router: any }) {
+  return (
+    <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      {contacts.map(contact => (
+        <div key={contact.id} className="relative bg-white rounded-xl shadow-sm p-5 flex flex-col gap-4">
+          <div className="pr-12">
+            <h3 className="text-lg font-semibold text-slate-900">
+              {contact.first_name} {contact.last_name}
+              {contact.is_primary && (
+                <span className="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">
+                  Primary
+                </span>
+              )}
+            </h3>
+            {contact.client && (
+              <p className="text-sm text-slate-600">
+                <Link
+                  href={`/crm/clients/${contact.client.id}`}
+                  className="text-blue-600 hover:underline"
+                >
+                  {contact.client.name}
+                </Link>
+              </p>
+            )}
+            {contact.email && (
+              <p className="text-sm text-slate-600">
+                <a href={`mailto:${contact.email}`} className="text-blue-600 hover:underline">
+                  {contact.email}
+                </a>
+              </p>
+            )}
+            {contact.phone && (
+              <p className="text-sm text-slate-600">
+                <a href={`tel:${contact.phone}`} className="text-blue-600 hover:underline">
+                  {contact.phone}
+                </a>
+              </p>
+            )}
+            {contact.role && <p className="text-sm text-slate-600">{contact.role}</p>}
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => router.push(`/crm/contacts/${contact.id}`)}
+              className="inline-flex items-center justify-center px-3 py-1.5 bg-slate-200 text-slate-700 rounded-full text-xs hover:bg-slate-300 transition cursor-pointer"
+            >
+              View Contact
+            </button>
+          </div>
+        </div>
+      ))}
+
+      {contacts.length === 0 && (
+        <div className="col-span-full p-8 text-center text-slate-500">
+          No contacts found. Create clients and add contacts to see them here.
+        </div>
+      )}
+    </section>
+  );
+}
+
+function ContactsListView({ contacts, router }: { contacts: (Contact & { client?: Client })[]; router: any }) {
+  return (
+    <section className="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-200">
           <thead className="bg-slate-50">
             <tr>
@@ -183,12 +350,12 @@ export default function ContactsPage() {
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <Link
-                    href={`/crm/contacts/${contact.id}`}
+                  <button
+                    onClick={() => router.push(`/crm/contacts/${contact.id}`)}
                     className="text-blue-600 hover:text-blue-900"
                   >
                     View Contact
-                  </Link>
+                  </button>
                 </td>
               </tr>
             ))}
@@ -201,7 +368,6 @@ export default function ContactsPage() {
           </div>
         )}
       </div>
-    </PageWrapper>
+    </section>
   );
 }
-

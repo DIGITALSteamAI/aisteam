@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
-import PageWrapper from "../components/PageWrapper";
+import ListingLayout from "../components/listing/ListingLayout";
 import CmsIcon from "./modules/CmsIcon";
 import ProjectSettingsModal from "../components/projects/ProjectSettingsModal";
 
@@ -23,7 +23,6 @@ type Project = {
 };
 
 export default function ProjectsPage() {
-  const [view, setView] = useState<ViewMode>("cards");
   const [filter, setFilter] = useState<FilterMode>("all");
   const [sortBy, setSortBy] = useState<SortMode>("name");
   const [projects, setProjects] = useState<Project[]>([]);
@@ -32,21 +31,13 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     async function loadProjects() {
-      console.log("Loading projects from API");
-      console.log("FETCHING", window.location.origin + "/api/projects");
-
       try {
         const res = await fetch("/api/projects", { cache: "no-store" });
-
-
         if (!res.ok) {
           console.log("API error status", res.status);
           return;
         }
-
         const json = await res.json();
-        console.log("Projects from API", json);
-
         setProjects(json.projects ?? []);
       } catch (err) {
         console.log("Failed to fetch projects", err);
@@ -54,7 +45,6 @@ export default function ProjectsPage() {
         setLoading(false);
       }
     }
-
     loadProjects();
   }, []);
 
@@ -67,7 +57,6 @@ export default function ProjectsPage() {
 
     list.sort((a, b) => {
       const safe = (v: any) => (v ?? "").toString().toLowerCase();
-
       if (sortBy === "name") return safe(a.name).localeCompare(safe(b.name));
       if (sortBy === "status") return safe(a.status).localeCompare(safe(b.status));
       if (sortBy === "cms") return safe(a.cms || a.cmsType).localeCompare(safe(b.cms || b.cmsType));
@@ -77,33 +66,59 @@ export default function ProjectsPage() {
     return list;
   }, [projects, filter, sortBy]);
 
-  const isCards = view === "cards";
-
   if (loading) {
     return (
-      <PageWrapper title="Projects" infoPage="projects">
-        <div className="p-6 text-center text-slate-500">Loading projects</div>
-      </PageWrapper>
+      <ListingLayout
+        title="Projects"
+        infoPageKey="projects-listing"
+        filters={<div />}
+        sorts={<div />}
+        cardView={<div className="p-6 text-center text-slate-500">Loading projects</div>}
+        listView={<div className="p-6 text-center text-slate-500">Loading projects</div>}
+      />
     );
   }
 
+  const filters = (
+    <div className="flex items-center px-2 py-1 bg-white border rounded">
+      <select
+        className="bg-transparent text-sm outline-none text-slate-700 cursor-pointer"
+        value={filter}
+        onChange={e => setFilter(e.target.value as FilterMode)}
+      >
+        <option value="all">All projects</option>
+        <option value="active">Active</option>
+        <option value="staging">Staging</option>
+        <option value="development">Development</option>
+      </select>
+    </div>
+  );
+
+  const sorts = (
+    <div className="flex items-center px-2 py-1 bg-white border rounded">
+      <select
+        className="bg-transparent text-sm outline-none text-slate-700 cursor-pointer"
+        value={sortBy}
+        onChange={e => setSortBy(e.target.value as SortMode)}
+      >
+        <option value="name">Name</option>
+        <option value="status">Status</option>
+        <option value="updated">Last updated</option>
+        <option value="cms">CMS type</option>
+      </select>
+    </div>
+  );
+
   return (
-    <PageWrapper title="Projects" infoPage="projects-listing">
-      <ProjectToolbar
-        view={view}
-        setView={setView}
-        filter={filter}
-        setFilter={setFilter}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
-      />
-
-      {isCards ? (
-        <CardsView projects={visibleProjects} onSettingsClick={setSettingsProjectId} />
-      ) : (
-        <ListView projects={visibleProjects} onSettingsClick={setSettingsProjectId} />
-      )}
-
+    <ListingLayout
+      title="Projects"
+      infoPageKey="projects-listing"
+      storageKey="projectsView"
+      filters={filters}
+      sorts={sorts}
+      cardView={<CardsView projects={visibleProjects} onSettingsClick={setSettingsProjectId} />}
+      listView={<ListView projects={visibleProjects} onSettingsClick={setSettingsProjectId} />}
+    >
       {settingsProjectId && (
         <ProjectSettingsModal
           key={settingsProjectId}
@@ -111,61 +126,7 @@ export default function ProjectsPage() {
           onClose={() => setSettingsProjectId(null)}
         />
       )}
-    </PageWrapper>
-  );
-}
-
-function ProjectToolbar({ view, setView, filter, setFilter, sortBy, setSortBy }: any) {
-  const isCards = view === "cards";
-
-  return (
-    <section className="w-full bg-slate-50 border rounded-xl p-4 mb-6">
-      <div className="flex items-center justify-end gap-3">
-
-        <div className="flex items-center px-2 py-1 bg-white border rounded">
-          <select
-            className="bg-transparent text-sm outline-none text-slate-700 cursor-pointer"
-            value={filter}
-            onChange={e => setFilter(e.target.value)}
-          >
-            <option value="all">All projects</option>
-            <option value="active">Active</option>
-            <option value="staging">Staging</option>
-            <option value="development">Development</option>
-          </select>
-        </div>
-
-        <div className="flex items-center px-2 py-1 bg-white border rounded">
-          <select
-            className="bg-transparent text-sm outline-none text-slate-700 cursor-pointer"
-            value={sortBy}
-            onChange={e => setSortBy(e.target.value)}
-          >
-            <option value="name">Name</option>
-            <option value="status">Status</option>
-            <option value="updated">Last updated</option>
-            <option value="cms">CMS type</option>
-          </select>
-        </div>
-
-        <div className="flex items-center bg-white border rounded overflow-hidden">
-          <button
-            onClick={() => setView("cards")}
-            className={`px 3 py 2 ${isCards ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}
-          >
-            Cards
-          </button>
-
-          <button
-            onClick={() => setView("list")}
-            className={`px 3 py 2 border-l ${!isCards ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}
-          >
-            List
-          </button>
-        </div>
-
-      </div>
-    </section>
+    </ListingLayout>
   );
 }
 
@@ -178,10 +139,8 @@ function CardsView({
 }) {
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-
       {projects.map(project => (
         <div key={project.id} className="relative bg-white rounded-xl shadow-sm p-5 flex flex-col gap-4">
-
           <div className="absolute top-4 right-4 w-10 h-10 bg-white rounded-full shadow flex items-center justify-center">
             <CmsIcon
               cmsType={project.cms || project.cmsType}
@@ -200,14 +159,12 @@ function CardsView({
           <div className="flex gap-2">
             <button
               onClick={() => {
-                console.log("Navigating to:", `/projects/${project.id}`);
                 window.location.href = `/projects/${project.id}`;
               }}
               className="inline-flex items-center justify-center px-3 py-1.5 bg-slate-200 text-slate-700 rounded-full text-xs hover:bg-slate-300 transition cursor-pointer"
             >
               Open project
             </button>
-
             <button
               onClick={() => onSettingsClick(project.id)}
               className="px-3 py-1.5 bg-slate-200 text-xs rounded-full hover:bg-slate-300"
@@ -215,10 +172,8 @@ function CardsView({
               Settings
             </button>
           </div>
-
         </div>
       ))}
-
     </section>
   );
 }
@@ -233,13 +188,10 @@ function ListView({
   return (
     <section className="bg-white rounded-xl shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
-
         <table className="min-w-full text-sm">
           <tbody>
-
             {projects.map(project => (
               <tr key={project.id} className="hover:bg-slate-50">
-
                 <td className="px-4 py-2">
                   <div className="flex items-center gap-2">
                     <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center">
@@ -248,18 +200,15 @@ function ListView({
                     <span className="text-slate-900 font-medium">{project.name}</span>
                   </div>
                 </td>
-
                 <td className="px-4 py-2">{project.domain ?? ""}</td>
                 <td className="px-4 py-2">{project.client ?? ""}</td>
                 <td className="px-4 py-2">{project.status ?? ""}</td>
                 <td className="px-4 py-2">{(project.cms || project.cmsType) ?? ""}</td>
                 <td className="px-4 py-2">{project.lastUpdate ?? ""}</td>
-
                 <td className="px-4 py-2 text-right">
                   <div className="inline-flex gap-2">
                     <button
                       onClick={() => {
-                        console.log("Navigating to:", `/projects/${project.id}`);
                         window.location.href = `/projects/${project.id}`;
                       }}
                       className="inline-flex items-center justify-center text-xs px-3 py-1 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer"
@@ -274,13 +223,10 @@ function ListView({
                     </button>
                   </div>
                 </td>
-
               </tr>
             ))}
-
           </tbody>
         </table>
-
       </div>
     </section>
   );
