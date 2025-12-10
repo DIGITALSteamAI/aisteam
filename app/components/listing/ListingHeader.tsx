@@ -12,6 +12,7 @@ type ListingHeaderProps = {
   sorts: ReactNode;
   view: "cards" | "list";
   onViewChange: (view: "cards" | "list") => void;
+  actionButton?: ReactNode;
 };
 
 export default function ListingHeader({
@@ -22,6 +23,7 @@ export default function ListingHeader({
   sorts,
   view,
   onViewChange,
+  actionButton,
 }: ListingHeaderProps) {
   return (
     <>
@@ -29,6 +31,7 @@ export default function ListingHeader({
       <div className="mb-6 flex items-start justify-between gap-3">
         <div className="flex-1">
           <h1 className="text-xl font-semibold mb-2 text-slate-800">{title}</h1>
+          {actionButton && <div className="mt-2">{actionButton}</div>}
         </div>
         {infoPageKey && (
           <div>

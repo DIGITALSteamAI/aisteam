@@ -14,6 +14,7 @@ type ListingLayoutProps = {
   cardView: ReactNode;
   listView: ReactNode;
   storageKey?: string; // For localStorage persistence
+  actionButton?: ReactNode; // Optional action button (e.g., "Add Client")
 };
 
 export default function ListingLayout({
@@ -25,6 +26,7 @@ export default function ListingLayout({
   cardView,
   listView,
   storageKey,
+  actionButton,
 }: ListingLayoutProps) {
   const [view, setView] = useState<"cards" | "list">("cards");
   const [openInfo, setOpenInfo] = useState(false);
@@ -60,6 +62,7 @@ export default function ListingLayout({
         sorts={sorts}
         view={view}
         onViewChange={handleViewChange}
+        actionButton={actionButton}
       />
 
       {view === "cards" ? cardView : listView}
