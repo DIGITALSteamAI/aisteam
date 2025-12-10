@@ -46,13 +46,17 @@ export async function GET() {
     }
 
     // Method 3: Query known tables by trying to access them
-    // This is a workaround - we'll try common table names
+    // Based on codebase analysis, these are the tables we know about
     const knownTables = [
-      'projects', 'project_settings', 'assistant_runs', 'assistant_tasks',
-      'assistant_messages', 'assistant_conversations'
+      'projects', 
+      'project_settings', 
+      'assistant_conversations',
+      'assistant_messages', 
+      'assistant_tasks',
+      'assistant_workflows'
     ];
     
-    const existingTables: string[] = [];
+    const existingTables: { name: string; accessible: boolean; error?: string }[] = [];
     
     for (const tableName of knownTables) {
       const { error } = await supabaseServer
@@ -60,27 +64,25 @@ export async function GET() {
         .select('*')
         .limit(0);
       
-      if (!error) {
-        existingTables.push(tableName);
-      }
+      existingTables.push({
+        name: tableName,
+        accessible: !error,
+        error: error?.message
+      });
     }
 
     return NextResponse.json({
       success: true,
-      method: "Table discovery (known tables)",
-      tables: existingTables,
-      note: "This only shows tables we tried. For complete list, create a PostgreSQL function in Supabase SQL editor:",
-      sqlFunction: `
-CREATE OR REPLACE FUNCTION list_tables()
-RETURNS TABLE(table_name text) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT t.table_name::text
-  FROM information_schema.tables t
-  WHERE t.table_schema = 'public'
-  ORDER BY t.table_name;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+      method: "Table discovery (known tables from codebase)",
+      totalChecked: knownTables.length,
+      tables: existingTables.filter(t => t.accessible).map(t => t.name),
+      allTables: existingTables,
+      note: "To get a complete list of ALL tables, run this SQL in Supabase SQL Editor:",
+      sqlQuery: `
+SELECT table_name 
+FROM information_schema.tables 
+WHERE table_schema = 'public' 
+ORDER BY table_name;
       `
     });
   } catch (err: any) {
