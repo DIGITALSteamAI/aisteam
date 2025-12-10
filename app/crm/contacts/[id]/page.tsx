@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 
 export default function ContactDetailPage() {
   const params = useParams();
   const contact_id = params?.id as string;
-  const [contact, setContact] = useState(null);
+  const [contact, setContact] = useState<any>(null);
   const [saving, setSaving] = useState(false);
 
   const [form, setForm] = useState({
@@ -67,64 +68,69 @@ export default function ContactDetailPage() {
     }
   }
 
-  if (!contact) return <div>Loading contact profile</div>;
+  if (!contact) return <div className="p-8 text-center text-slate-600">Loading contact profile...</div>;
 
   return (
-    <div className="bg_white p_8 rounded text_slate_800 max_w_4xl mx_auto space_y_8">
+    <div className="bg-white p-8 rounded-lg text-slate-800 max-w-4xl mx-auto space-y-8">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Contact Profile</h1>
+        <Link href="/crm/contacts" className="text-blue-600 hover:underline">
+          ← Back to Contacts
+        </Link>
+      </div>
 
-      <h1 className="text_3xl font_bold">Contact Profile</h1>
-
-      <div className="space_y_4">
-        <label className="block text_sm">First Name</label>
+      <div className="space-y-4">
+        <label className="block text-sm font-medium">First Name</label>
         <input
-          className="border p_2 rounded w_full"
+          className="border p-2 rounded w-full"
           value={form.first_name}
           onChange={e => setForm({ ...form, first_name: e.target.value })}
         />
 
-        <label className="block text_sm">Last Name</label>
+        <label className="block text-sm font-medium">Last Name</label>
         <input
-          className="border p_2 rounded w_full"
+          className="border p-2 rounded w-full"
           value={form.last_name}
           onChange={e => setForm({ ...form, last_name: e.target.value })}
         />
 
-        <label className="block text_sm">Email</label>
+        <label className="block text-sm font-medium">Email</label>
         <input
-          className="border p_2 rounded w_full"
+          type="email"
+          className="border p-2 rounded w-full"
           value={form.email}
           onChange={e => setForm({ ...form, email: e.target.value })}
         />
 
-        <label className="block text_sm">Phone</label>
+        <label className="block text-sm font-medium">Phone</label>
         <input
-          className="border p_2 rounded w_full"
+          className="border p-2 rounded w-full"
           value={form.phone}
           onChange={e => setForm({ ...form, phone: e.target.value })}
         />
 
-        <label className="block text_sm">Role</label>
+        <label className="block text-sm font-medium">Role</label>
         <input
-          className="border p_2 rounded w_full"
+          className="border p-2 rounded w-full"
           value={form.role}
           onChange={e => setForm({ ...form, role: e.target.value })}
         />
 
-        <label className="flex items_center gap_2 mt_2">
+        <label className="flex items-center gap-2 mt-2">
           <input
             type="checkbox"
             checked={form.is_primary}
             onChange={e => setForm({ ...form, is_primary: e.target.checked })}
           />
-          <span className="text_sm">Primary Contact</span>
+          <span className="text-sm">Primary Contact</span>
         </label>
 
         <button
           onClick={save}
           disabled={saving}
-          className="mt_4 px_4 py_2 bg_slate_800 text_white rounded"
+          className="mt-4 px-4 py-2 bg-slate-800 text-white rounded hover:bg-slate-700 transition disabled:opacity-50"
         >
-          {saving ? "Saving" : "Save Contact"}
+          {saving ? "Saving..." : "Save Contact"}
         </button>
       </div>
     </div>
