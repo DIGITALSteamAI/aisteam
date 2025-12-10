@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import PageWrapper from "../../components/PageWrapper";
 
 type Contact = {
@@ -23,6 +24,7 @@ type Client = {
 export default function ContactsPage() {
   const [contacts, setContacts] = useState<(Contact & { client?: Client })[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     loadContacts();
@@ -82,6 +84,15 @@ export default function ContactsPage() {
 
   return (
     <PageWrapper title="Contacts">
+      <div className="mb-6 flex justify-end">
+        <button
+          onClick={() => router.push("/crm/contacts/new")}
+          className="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition"
+        >
+          Add Contact
+        </button>
+      </div>
+
       <div className="bg-white border rounded-xl overflow-hidden">
         <table className="min-w-full divide-y divide-slate-200">
           <thead className="bg-slate-50">
