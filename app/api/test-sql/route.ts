@@ -38,8 +38,19 @@ export async function GET() {
     if (!rpcError && rpcData) {
       return NextResponse.json({
         success: true,
-        method: "RPC function",
-        tables: rpcData
+        method: "RPC function (list_tables)",
+        tables: Array.isArray(rpcData) ? rpcData.map((t: any) => t.table_name || t) : rpcData
+      });
+    }
+
+    // If RPC doesn't exist yet, provide instructions
+    if (rpcError) {
+      return NextResponse.json({
+        success: false,
+        error: "RPC function not found",
+        details: rpcError.message,
+        solution: "Run the SQL migration file: supabase/migrations/list_tables_function.sql in your Supabase SQL editor",
+        fallback: "Using table discovery method instead..."
       });
     }
 
