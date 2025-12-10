@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   try {
     const tenantId = getTenantId(request);
 
-    // Build query with join to clients table for client name
+    // Build query - make clients join optional to avoid breaking if FK not set up
     let query = supabase
       .from("projects")
       .select(`
@@ -21,11 +21,7 @@ export async function GET(request: NextRequest) {
         cms,
         domain,
         cms_url,
-        client_id,
-        clients:client_id (
-          id,
-          name
-        )
+        client_id
       `)
       .eq("tenant_id", tenantId);
 
@@ -44,6 +40,28 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // If we have projects with client_id, fetch client names separately
+    const clientIds = (projects || [])
+      .map((p: any) => p.client_id)
+      .filter((id: any) => id) as string[];
+    
+    const clientMap = new Map<string, string>();
+    if (clientIds.length > 0) {
+      try {
+        const { data: clients } = await supabase
+          .from("clients")
+          .select("id, name")
+          .in("id", clientIds);
+        
+        (clients || []).forEach((c: any) => {
+          clientMap.set(c.id, c.name);
+        });
+      } catch (err) {
+        console.warn("Could not fetch client names:", err);
+        // Continue without client names
+      }
+    }
+
     const cmsMap: Record<string, string> = {
       wordpress: "/icon-wordpress.png",
       shopify: "/icon-shopify.png",
@@ -54,7 +72,7 @@ export async function GET(request: NextRequest) {
     // Enrich projects with formatted data for frontend
     const enriched = (projects || []).map((p: any) => {
       const cmsKey = (p.cms || "").toLowerCase();
-      const client = Array.isArray(p.clients) ? p.clients[0] : p.clients;
+      const clientName = p.client_id ? clientMap.get(p.client_id) : null;
       
       // Format lastUpdate from updated_at or created_at
       const lastUpdate = p.updated_at 
@@ -67,7 +85,7 @@ export async function GET(request: NextRequest) {
         id: p.id,
         name: p.name,
         domain: p.domain || null,
-        client: client?.name || null,
+        client: clientName || null,
         status: "active", // Default status - can be enhanced later
         cms: p.cms || null,
         cmsType: p.cms || null,
