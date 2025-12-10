@@ -54,19 +54,18 @@ export default function PageWrapper({
   return (
     <div className="p-6">
       <div className="mb-6 flex items-start justify-between gap-3">
-        <div className="flex-1">
+        <div className="flex-1 flex items-center gap-2">
           {title && (
-            <h1 className="text-xl font-semibold mb-2 text-slate-800">
+            <h1 className="text-xl font-semibold mb-2 text-slate-800 uppercase">
               {title}
             </h1>
           )}
+          {pageKey && (
+            <div className="mb-2">
+              <InfoButton onClick={() => setOpenInfo(true)} />
+            </div>
+          )}
         </div>
-
-        {pageKey && (
-          <div>
-            <InfoButton onClick={() => setOpenInfo(true)} />
-          </div>
-        )}
       </div>
 
       {children}

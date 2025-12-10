@@ -27,15 +27,19 @@ export default function ListingHeader({
 }: ListingHeaderProps) {
   return (
     <>
-      {/* Title row with info button */}
+      {/* Title row with info button and action button */}
       <div className="mb-6 flex items-start justify-between gap-3">
-        <div className="flex-1">
-          <h1 className="text-xl font-semibold mb-2 text-slate-800">{title}</h1>
-          {actionButton && <div className="mt-2">{actionButton}</div>}
+        <div className="flex-1 flex items-center gap-2">
+          <h1 className="text-xl font-semibold mb-2 text-slate-800 uppercase">{title}</h1>
+          {infoPageKey && (
+            <div className="mb-2">
+              <InfoButton onClick={onInfoClick} />
+            </div>
+          )}
         </div>
-        {infoPageKey && (
+        {actionButton && (
           <div>
-            <InfoButton onClick={onInfoClick} />
+            {actionButton}
           </div>
         )}
       </div>
