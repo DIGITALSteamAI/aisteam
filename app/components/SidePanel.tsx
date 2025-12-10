@@ -57,6 +57,10 @@ export default function SidePanel() {
           <Link href="/crm/clients" className={linkClass(isActive("/crm/clients"))}>
             Clients
           </Link>
+
+          <Link href="/crm/contacts" className={linkClass(isActive("/crm/contacts"))}>
+            Contacts
+          </Link>
         </div>
 
         {/* INTERACTIONS */}
