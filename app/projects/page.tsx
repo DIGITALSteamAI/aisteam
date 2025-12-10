@@ -89,28 +89,53 @@ export default function ProjectsPage() {
 
   return (
     <PageWrapper title="Projects" infoPage="projects">
-      <ProjectToolbar
-        view={view}
-        setView={setView}
-        filter={filter}
-        setFilter={setFilter}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
-      />
+      {/* DEBUG: High priority overlay to detect blocking elements */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          pointerEvents: "none",
+          zIndex: 999999,
+          border: "4px dashed yellow"
+        }}
+      >
+        DEBUG OVERLAY ACTIVE
+      </div>
 
-      {isCards ? (
-        <CardsView projects={visibleProjects} onSettingsClick={setSettingsProjectId} />
-      ) : (
-        <ListView projects={visibleProjects} onSettingsClick={setSettingsProjectId} />
-      )}
-
-      {settingsProjectId && (
-        <ProjectSettingsModal
-          key={settingsProjectId}
-          projectId={settingsProjectId}
-          onClose={() => setSettingsProjectId(null)}
+      {/* DEBUG: Root container wrapper */}
+      <div
+        style={{
+          border: "2px solid red",
+          pointerEvents: "auto"
+        }}
+        onClick={() => console.log("Root container received a click")}
+      >
+        <ProjectToolbar
+          view={view}
+          setView={setView}
+          filter={filter}
+          setFilter={setFilter}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
         />
-      )}
+
+        {isCards ? (
+          <CardsView projects={visibleProjects} onSettingsClick={setSettingsProjectId} />
+        ) : (
+          <ListView projects={visibleProjects} onSettingsClick={setSettingsProjectId} />
+        )}
+
+        {settingsProjectId && (
+          <ProjectSettingsModal
+            key={settingsProjectId}
+            projectId={settingsProjectId}
+            onClose={() => setSettingsProjectId(null)}
+          />
+        )}
+      </div>
     </PageWrapper>
   );
 }
@@ -177,7 +202,11 @@ function CardsView({
   onSettingsClick: (projectId: string) => void;
 }) {
   return (
-    <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+    <section
+      className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
+      style={{ border: "2px solid blue", position: "relative", zIndex: 10 }}
+      onClick={() => console.log("CardsView wrapper clicked")}
+    >
 
       {projects.map(project => (
         <div key={project.id} className="relative bg-white rounded-xl shadow-sm p-5 flex flex-col gap-4">
