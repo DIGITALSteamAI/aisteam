@@ -8,7 +8,7 @@ import { getPageContent } from "@/lib/pageContent";
 type ListingLayoutProps = {
   title: string;
   infoPageKey?: string;
-  children: ReactNode;
+  children?: ReactNode;
   filters: ReactNode;
   sorts: ReactNode;
   cardView: ReactNode;
