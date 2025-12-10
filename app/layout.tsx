@@ -14,10 +14,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-slate-100 text-slate-900">
-        {/* TEMPORARILY DISABLED: AssistantProvider to test click event interception */}
-        {/* <AssistantProvider> */}
+        <AssistantProvider>
           {children}
-        {/* </AssistantProvider> */}
+        </AssistantProvider>
       </body>
     </html>
   );
