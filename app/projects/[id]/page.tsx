@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import PageWrapper from "../../components/PageWrapper";
 import CmsIcon from "../modules/CmsIcon";
 
@@ -158,86 +158,26 @@ export default function ProjectDashboardPage() {
 
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const loadedIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    console.log("Project Details useEffect triggered with id:", id);
-    
-    // Reset state when ID changes
-    if (id !== loadedIdRef.current) {
-      setProject(null);
+    if (!id) return;
+
+    async function load() {
       setLoading(true);
-      loadedIdRef.current = null;
-    }
 
-    // Prevent multiple loads for the same ID
-    if (loadedIdRef.current === id) {
-      return;
-    }
-
-    let isMounted = true;
-    loadedIdRef.current = id;
-
-    async function loadProject() {
       try {
-        const fetchUrl = `/api/projects/${id}`;
-        console.log("Fetching project from:", fetchUrl);
-        
-        // Add timeout to prevent hanging
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-        
-        const res = await fetch(fetchUrl, {
-          signal: controller.signal,
-          cache: "no-store"
-        });
-        
-        clearTimeout(timeoutId);
-        
-        console.log("Fetch response status:", res.status);
-        
-        if (!isMounted) return;
-        
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => ({}));
-          console.error("Project fetch failed:", res.status, errorData);
-          if (isMounted) {
-            setProject(null);
-            setLoading(false);
-          }
-          return;
-        }
-        
-        const json = (await res.json()) as any;
-        console.log("Project data received:", json);
-        
-        if (!isMounted) return;
-        
-        if (json.data) {
-          setProject(json.data);
-        } else {
-          console.error("Project data missing from response:", json);
-          setProject(null);
-        }
-      } catch (err: any) {
-        if (!isMounted) return;
+        const res = await fetch(`/api/projects/${id}`, { cache: "no-store" });
+        const json = await res.json();
+        setProject(json.data ?? null);
+      } catch (err) {
         console.error("Project fetch error:", err);
-        if (err.name === 'AbortError') {
-          console.error("Request timed out after 10 seconds");
-        }
         setProject(null);
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     }
 
-    loadProject();
-
-    return () => {
-      isMounted = false;
-    };
+    load();
   }, [id]);
 
   if (loading) {
