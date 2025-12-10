@@ -200,7 +200,7 @@ function CardsView({
           <div className="flex gap-2">
             <Link
               href={`/projects/${project.id}`}
-              onClick={() => console.log("Clicked", project.id)}
+              onClick={() => console.log("Open Project clicked, id:", project.id)}
               className="px-3 py-1.5 bg-slate-200 text-slate-700 rounded-full text-xs hover:bg-slate-300 transition cursor-pointer text-center no-underline"
             >
               Open project
@@ -257,7 +257,7 @@ function ListView({
                   <div className="inline-flex gap-2">
                     <Link
                       href={`/projects/${project.id}`}
-                      onClick={() => console.log("Clicked", project.id)}
+                      onClick={() => console.log("Open (list) clicked, id:", project.id)}
                       className="text-xs px-3 py-1 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer no-underline inline-block text-center"
                     >
                       Open

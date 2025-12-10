@@ -150,8 +150,9 @@ function AgencyIcon() {
 
 export default function ProjectDashboardPage() {
   const params = useParams();
-  console.log("Params received:", params);
+  console.log("Project Details params:", params);
   const id = params?.id as string | undefined;
+  console.log("Project Details id:", id);
 
   if (!id) return null;
 
@@ -160,6 +161,8 @@ export default function ProjectDashboardPage() {
   const loadedIdRef = useRef<string | null>(null);
 
   useEffect(() => {
+    console.log("Project Details useEffect triggered with id:", id);
+    
     // Reset state when ID changes
     if (id !== loadedIdRef.current) {
       setProject(null);
@@ -177,16 +180,21 @@ export default function ProjectDashboardPage() {
 
     async function loadProject() {
       try {
+        const fetchUrl = `/api/projects/${id}`;
+        console.log("Fetching project from:", fetchUrl);
+        
         // Add timeout to prevent hanging
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
         
-        const res = await fetch(`/api/projects/${id}`, {
+        const res = await fetch(fetchUrl, {
           signal: controller.signal,
           cache: "no-store"
         });
         
         clearTimeout(timeoutId);
+        
+        console.log("Fetch response status:", res.status);
         
         if (!isMounted) return;
         
