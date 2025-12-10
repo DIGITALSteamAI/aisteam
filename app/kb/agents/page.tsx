@@ -476,7 +476,7 @@ export default function KBAgentsPage() {
           <li>Receive the message and identify the conversation</li>
           <li>Analyze intent based on message content and history</li>
           <li>
-            Load project data and any relevant tenant or business context
+            Load project data and any relevant tenant or client context
           </li>
           <li>
             Decide whether the request is strategic, execution focused, or mixed

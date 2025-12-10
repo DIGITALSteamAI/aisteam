@@ -50,19 +50,11 @@ export default function SidePanel() {
           </Link>
         </div>
 
-        {/* RELATIONSHIPS */}
+        {/* CRM */}
         <div className={groupClass}>
-          <div className={groupTitle}>Relationships</div>
+          <div className={groupTitle}>CRM</div>
 
-          <Link href="/businesses" className={linkClass(isActive("/businesses"))}>
-            Businesses
-          </Link>
-
-          <Link href="/contacts" className={linkClass(isActive("/contacts"))}>
-            Contacts
-          </Link>
-
-          <Link href="/clients" className={linkClass(isActive("/clients"))}>
+          <Link href="/crm/clients" className={linkClass(isActive("/crm/clients"))}>
             Clients
           </Link>
         </div>

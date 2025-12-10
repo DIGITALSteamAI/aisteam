@@ -7,7 +7,6 @@ const validPages = [
   "dashboard",
   "projects",
   "tasks",
-  "businesses",
   "tickets",
   "agents",
   "settings",

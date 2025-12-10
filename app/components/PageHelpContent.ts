@@ -15,20 +15,15 @@ export const pageHelp = {
     description:
       "Tasks help track work across projects. They can be assigned manually or created automatically by AI agents.",
   },
-  businesses: {
-    title: "Businesses",
+  clients: {
+    title: "Clients",
     description:
-      "Businesses represent organizations stored in your CRM. They may or may not be active clients. Each business can have multiple contacts.",
+      "Clients are organizations that your agency actively services. Each client can have multiple contacts and projects. Projects belong to clients.",
   },
   contacts: {
     title: "Contacts",
     description:
-      "Contacts are people who work inside a business. You can assign them to clients or reference them inside projects.",
-  },
-  clients: {
-    title: "Clients",
-    description:
-      "Clients are businesses that your agency actively services. Projects belong to clients, not directly to businesses.",
+      "Contacts are people who work for clients. You can assign them to clients and reference them inside projects.",
   },
   tickets: {
     title: "Tickets",

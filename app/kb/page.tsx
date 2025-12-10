@@ -87,7 +87,7 @@ export default function KBHomePage() {
       <section>
         <h2 className="text-xl font-semibold mb-3">Relationships</h2>
         <ul className="ml-4 list-disc text-sm space-y-1">
-          <li><Link href="/kb/businesses" className="text-blue-600 hover:underline">Businesses</Link></li>
+          <li><Link href="/kb/clients" className="text-blue-600 hover:underline">Clients</Link></li>
           <li><Link href="/kb/contacts" className="text-blue-600 hover:underline">Contacts</Link></li>
           <li><Link href="/kb/clients" className="text-blue-600 hover:underline">Clients</Link></li>
         </ul>
