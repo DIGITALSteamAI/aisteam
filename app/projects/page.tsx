@@ -88,7 +88,7 @@ export default function ProjectsPage() {
   }
 
   return (
-    <PageWrapper title="Projects" infoPage="projects">
+    <PageWrapper title="Projects" infoPage="projects-listing">
       <ProjectToolbar
         view={view}
         setView={setView}

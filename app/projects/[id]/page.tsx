@@ -222,7 +222,7 @@ export default function ProjectDashboardPage() {
   }
 
   return (
-    <PageWrapper title={projectName}>
+    <PageWrapper title={projectName} infoPage="project-details">
       <section className="bg-white border rounded-xl p-6 mb-6">
         <div className="flex items-start justify-between">
           <div>

@@ -45,7 +45,7 @@ export default function ClientsPage() {
   }
 
   return (
-    <PageWrapper title="Clients">
+    <PageWrapper title="Clients" infoPage="clients-listing">
       <div className="mb-6 flex justify-end">
         <button
           onClick={() => router.push("/crm/clients/new")}

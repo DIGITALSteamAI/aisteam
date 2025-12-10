@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import PageWrapper from "../../../components/PageWrapper";
 
 export default function ClientDetailPage() {
   const params = useParams();
@@ -68,16 +69,21 @@ export default function ClientDetailPage() {
     }
   }
 
-  if (!client) return <div className="p-8 text-center text-slate-600">Loading client profile...</div>;
+  if (!client) return (
+    <PageWrapper title="Client Profile" infoPage="client-details">
+      <div className="p-8 text-center text-slate-600">Loading client profile...</div>
+    </PageWrapper>
+  );
 
   return (
-    <div className="bg-white p-8 rounded-lg text-slate-800 space-y-10 max-w-5xl mx-auto">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Client Profile</h1>
-        <Link href="/crm/clients" className="text-blue-600 hover:underline">
-          ← Back to Clients
-        </Link>
-      </div>
+    <PageWrapper title="Client Profile" infoPage="client-details">
+      <div className="bg-white p-8 rounded-lg text-slate-800 space-y-10 max-w-5xl mx-auto">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Client Profile</h1>
+          <Link href="/crm/clients" className="text-blue-600 hover:underline">
+            ← Back to Clients
+          </Link>
+        </div>
 
       <div className="space-y-4">
         <label className="block text-sm font-medium">Client Name</label>
@@ -152,6 +158,7 @@ export default function ClientDetailPage() {
           Manage all contacts →
         </Link>
       </div>
-    </div>
+      </div>
+    </PageWrapper>
   );
 }

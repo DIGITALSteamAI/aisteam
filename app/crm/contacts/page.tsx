@@ -83,7 +83,7 @@ export default function ContactsPage() {
   }
 
   return (
-    <PageWrapper title="Contacts">
+    <PageWrapper title="Contacts" infoPage="contacts-listing">
       <div className="mb-6 flex justify-end">
         <button
           onClick={() => router.push("/crm/contacts/new")}

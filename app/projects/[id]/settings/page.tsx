@@ -19,7 +19,7 @@ export default function ProjectSettingsPage() {
   }
 
   return (
-    <PageWrapper title="Project Settings" infoPage="projects">
+    <PageWrapper title="Project Settings" infoPage="project-settings">
       <div className="max-w-4xl">
         <ProjectSettingsContainer projectId={projectId} />
       </div>

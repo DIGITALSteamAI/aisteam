@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import PageWrapper from "../../../components/PageWrapper";
 
 export default function ContactDetailPage() {
   const params = useParams();
@@ -68,10 +69,15 @@ export default function ContactDetailPage() {
     }
   }
 
-  if (!contact) return <div className="p-8 text-center text-slate-600">Loading contact profile...</div>;
+  if (!contact) return (
+    <PageWrapper title="Contact Profile" infoPage="contact-details">
+      <div className="p-8 text-center text-slate-600">Loading contact profile...</div>
+    </PageWrapper>
+  );
 
   return (
-    <div className="bg-white p-8 rounded-lg text-slate-800 max-w-4xl mx-auto space-y-8">
+    <PageWrapper title="Contact Profile" infoPage="contact-details">
+      <div className="bg-white p-8 rounded-lg text-slate-800 max-w-4xl mx-auto space-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Contact Profile</h1>
         <Link href="/crm/contacts" className="text-blue-600 hover:underline">
@@ -133,6 +139,7 @@ export default function ContactDetailPage() {
           {saving ? "Saving..." : "Save Contact"}
         </button>
       </div>
-    </div>
+      </div>
+    </PageWrapper>
   );
 }
