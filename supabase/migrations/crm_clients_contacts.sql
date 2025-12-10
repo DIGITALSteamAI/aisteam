@@ -87,31 +87,39 @@ ALTER TABLE public.contacts ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies (using service role bypasses RLS, but policies are here for future auth)
 -- Note: Adjust these based on your actual auth system
-CREATE POLICY IF NOT EXISTS "Users can view clients in their tenant"
+-- Drop existing policies if they exist, then create new ones
+DROP POLICY IF EXISTS "Users can view clients in their tenant" ON public.clients;
+CREATE POLICY "Users can view clients in their tenant"
   ON public.clients FOR SELECT
   USING (true); -- Service role bypasses, adjust for production
 
-CREATE POLICY IF NOT EXISTS "Users can insert clients in their tenant"
+DROP POLICY IF EXISTS "Users can insert clients in their tenant" ON public.clients;
+CREATE POLICY "Users can insert clients in their tenant"
   ON public.clients FOR INSERT
   WITH CHECK (true);
 
-CREATE POLICY IF NOT EXISTS "Users can update clients in their tenant"
+DROP POLICY IF EXISTS "Users can update clients in their tenant" ON public.clients;
+CREATE POLICY "Users can update clients in their tenant"
   ON public.clients FOR UPDATE
   USING (true);
 
-CREATE POLICY IF NOT EXISTS "Users can view contacts in their tenant"
+DROP POLICY IF EXISTS "Users can view contacts in their tenant" ON public.contacts;
+CREATE POLICY "Users can view contacts in their tenant"
   ON public.contacts FOR SELECT
   USING (true);
 
-CREATE POLICY IF NOT EXISTS "Users can insert contacts in their tenant"
+DROP POLICY IF EXISTS "Users can insert contacts in their tenant" ON public.contacts;
+CREATE POLICY "Users can insert contacts in their tenant"
   ON public.contacts FOR INSERT
   WITH CHECK (true);
 
-CREATE POLICY IF NOT EXISTS "Users can update contacts in their tenant"
+DROP POLICY IF EXISTS "Users can update contacts in their tenant" ON public.contacts;
+CREATE POLICY "Users can update contacts in their tenant"
   ON public.contacts FOR UPDATE
   USING (true);
 
-CREATE POLICY IF NOT EXISTS "Users can delete contacts in their tenant"
+DROP POLICY IF EXISTS "Users can delete contacts in their tenant" ON public.contacts;
+CREATE POLICY "Users can delete contacts in their tenant"
   ON public.contacts FOR DELETE
   USING (true);
 
