@@ -1,6 +1,6 @@
 "use client";
 
-import ProjectSettingsContainer from "../../projects/[projectId]/settings/ProjectSettingsContainer";
+import ProjectSettingsContainer from "../../projects/[id]/settings/ProjectSettingsContainer";
 
 interface ProjectSettingsModalProps {
   projectId: string;
