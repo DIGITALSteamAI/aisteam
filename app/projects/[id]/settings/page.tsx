@@ -1,27 +1,29 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { mockProjects } from "../../mockProjects";
-import ProjectForm from "../../modules/ProjectForm";
+import PageWrapper from "../../../components/PageWrapper";
+import ProjectSettingsContainer from "./ProjectSettingsContainer";
 
-export default function Page() {
+export default function ProjectSettingsPage() {
   const params = useParams();
-  const id = params.id as string;
+  const projectId = params?.id as string;
 
-  const project = mockProjects.find(item => item.id === id);
-
-  if (!project) {
+  if (!projectId) {
     return (
-      <div className="p-6">
-        <h1>Project not found</h1>
-      </div>
+      <PageWrapper title="Project Settings">
+        <div className="bg-white border rounded-xl p-8">
+          <p className="text-slate-600">Project ID is required</p>
+        </div>
+      </PageWrapper>
     );
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-semibold mb-4">Project Settings</h1>
-      <ProjectForm mode="edit" project={project} />
-    </div>
+    <PageWrapper title="Project Settings" infoPage="projects">
+      <div className="max-w-4xl">
+        <ProjectSettingsContainer projectId={projectId} />
+      </div>
+    </PageWrapper>
   );
 }
+
