@@ -3,51 +3,89 @@ import { supabaseServer } from "@/lib/supabaseServer";
 
 export async function GET() {
   try {
-    // Use Supabase RPC to call a PostgreSQL function that lists tables
-    // This queries pg_catalog.pg_tables which is accessible via RPC
-    const { data, error } = await supabaseServer.rpc('exec_sql', {
-      query: `
-        SELECT table_name 
-        FROM information_schema.tables 
-        WHERE table_schema = 'public' 
-        ORDER BY table_name;
-      `
-    });
-
-    // If RPC doesn't exist, try direct query to pg_tables via a simpler approach
-    // Actually, let's query a known table first to verify connection
-    const { data: testData, error: testError } = await supabaseServer
-      .from('projects')
-      .select('id')
-      .limit(1);
-
-    if (testError) {
+    // Try to use Supabase REST API to query information_schema via RPC
+    // First, let's try calling a function if it exists, otherwise use direct HTTP request
+    
+    // Method 1: Try RPC function (if it exists)
+    const { data: rpcData, error: rpcError } = await supabaseServer.rpc('list_tables');
+    
+    if (!rpcError && rpcData) {
       return NextResponse.json({
-        error: "Database connection test failed",
-        details: testError.message,
-        hint: "This confirms Supabase connection works, but we need a different method to list tables"
-      }, { status: 500 });
+        success: true,
+        method: "RPC function",
+        tables: rpcData
+      });
     }
 
-    // For listing tables, we'd typically need:
-    // 1. A database function created in Supabase SQL editor, OR
-    // 2. Supabase CLI with `supabase db execute`, OR  
-    // 3. Direct PostgreSQL connection
+    // Method 2: Use Supabase REST API directly to query pg_catalog
+    // We'll make a direct HTTP request to Supabase's REST API
+    const supabaseUrl = process.env.SUPABASE_URL!;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
     
+    // Query information_schema via REST API
+    const response = await fetch(
+      `${supabaseUrl}/rest/v1/rpc/list_tables`,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': serviceKey,
+          'Authorization': `Bearer ${serviceKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({})
+      }
+    );
+
+    if (response.ok) {
+      const tables = await response.json();
+      return NextResponse.json({
+        success: true,
+        method: "REST API RPC",
+        tables: tables
+      });
+    }
+
+    // Method 3: Query known tables by trying to access them
+    // This is a workaround - we'll try common table names
+    const knownTables = [
+      'projects', 'project_settings', 'assistant_runs', 'assistant_tasks',
+      'assistant_messages', 'assistant_conversations'
+    ];
+    
+    const existingTables: string[] = [];
+    
+    for (const tableName of knownTables) {
+      const { error } = await supabaseServer
+        .from(tableName)
+        .select('*')
+        .limit(0);
+      
+      if (!error) {
+        existingTables.push(tableName);
+      }
+    }
+
     return NextResponse.json({
       success: true,
-      message: "Supabase connection verified!",
-      connectionTest: "Connected to 'projects' table successfully",
-      note: "To list all tables, you would need to either:",
-      options: [
-        "1. Create a PostgreSQL function in Supabase SQL editor",
-        "2. Use Supabase CLI: supabase db execute 'SELECT table_name FROM information_schema.tables WHERE table_schema = \\'public\\';'",
-        "3. Use direct PostgreSQL connection with psql"
-      ]
+      method: "Table discovery (known tables)",
+      tables: existingTables,
+      note: "This only shows tables we tried. For complete list, create a PostgreSQL function in Supabase SQL editor:",
+      sqlFunction: `
+CREATE OR REPLACE FUNCTION list_tables()
+RETURNS TABLE(table_name text) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT t.table_name::text
+  FROM information_schema.tables t
+  WHERE t.table_schema = 'public'
+  ORDER BY t.table_name;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+      `
     });
   } catch (err: any) {
     return NextResponse.json({
-      error: "SQL execution failed",
+      error: "Failed to list tables",
       details: err.message
     }, { status: 500 });
   }
