@@ -227,18 +227,15 @@ function CardsView({
           </div>
 
           <div className="flex gap-2">
-            <Link href={`/projects/${project.id}`}>
-              <span
-                className="inline-flex items-center justify-center px-3 py-1.5 bg-slate-200 text-slate-700 rounded-full text-xs hover:bg-slate-300 transition cursor-pointer"
-                style={{ display: "inline-flex", pointerEvents: "auto" }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log("Open Project clicked, id:", project.id);
-                }}
-              >
-                Open project
-              </span>
-            </Link>
+            <button
+              onClick={() => {
+                console.log("Navigating to:", `/projects/${project.id}`);
+                window.location.href = `/projects/${project.id}`;
+              }}
+              className="inline-flex items-center justify-center px-3 py-1.5 bg-slate-200 text-slate-700 rounded-full text-xs hover:bg-slate-300 transition cursor-pointer"
+            >
+              Open project
+            </button>
 
             <button
               onClick={() => onSettingsClick(project.id)}
@@ -289,18 +286,15 @@ function ListView({
 
                 <td className="px-4 py-2 text-right">
                   <div className="inline-flex gap-2">
-                    <Link href={`/projects/${project.id}`}>
-                      <span
-                        className="inline-flex items-center justify-center text-xs px-3 py-1 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer"
-                        style={{ display: "inline-flex", pointerEvents: "auto" }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          console.log("Open (list) clicked, id:", project.id);
-                        }}
-                      >
-                        Open
-                      </span>
-                    </Link>
+                    <button
+                      onClick={() => {
+                        console.log("Navigating to:", `/projects/${project.id}`);
+                        window.location.href = `/projects/${project.id}`;
+                      }}
+                      className="inline-flex items-center justify-center text-xs px-3 py-1 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer"
+                    >
+                      Open
+                    </button>
                     <button
                       onClick={() => onSettingsClick(project.id)}
                       className="text-xs px-3 py-1 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200"
