@@ -16,7 +16,8 @@ export default function BaseLayout({
   headerTitle = "Welcome to AISTEAM" 
 }: BaseLayoutProps) {
   return (
-    <AssistantDockListener>
+    // TEMPORARILY DISABLED: AssistantDockListener to test click event interception
+    // <AssistantDockListener>
       <div className="flex min-h-screen">
         {/* Sidebar */}
         <SidePanel />
@@ -29,7 +30,8 @@ export default function BaseLayout({
               {headerTitle}
             </div>
             <div className="flex items-center">
-              <AssistantHeaderPresence />
+              {/* TEMPORARILY DISABLED: AssistantHeaderPresence */}
+              {/* <AssistantHeaderPresence /> */}
             </div>
           </header>
 
@@ -39,10 +41,10 @@ export default function BaseLayout({
           </main>
         </div>
 
-        {/* Assistant panel */}
-        <AssistantPanel />
+        {/* TEMPORARILY DISABLED: Assistant panel */}
+        {/* <AssistantPanel /> */}
       </div>
-    </AssistantDockListener>
+    // </AssistantDockListener>
   );
 }
 
