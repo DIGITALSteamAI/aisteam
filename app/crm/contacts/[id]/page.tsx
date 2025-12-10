@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 
-export default function ContactDetailPage({ params }) {
-  const contact_id = params.id;
+export default function ContactDetailPage() {
+  const params = useParams();
+  const contact_id = params?.id as string;
   const [contact, setContact] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -17,30 +19,52 @@ export default function ContactDetailPage({ params }) {
   });
 
   useEffect(() => {
+    if (!contact_id) return;
+    
     async function load() {
-      const res = await fetch(`/api/contacts/${contact_id}`);
-      const data = await res.json();
-      setContact(data);
-      setForm({
-        first_name: data.first_name || "",
-        last_name: data.last_name || "",
-        email: data.email || "",
-        phone: data.phone || "",
-        role: data.role || "",
-        is_primary: data.is_primary || false
-      });
+      try {
+        const res = await fetch(`/api/contacts/${contact_id}`);
+        const json = await res.json();
+        const data = json.contact || json;
+        setContact(data);
+        setForm({
+          first_name: data.first_name || "",
+          last_name: data.last_name || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          role: data.role || "",
+          is_primary: data.is_primary || false
+        });
+      } catch (err) {
+        console.error("Failed to load contact:", err);
+      }
     }
     load();
   }, [contact_id]);
 
   async function save() {
+    if (!contact_id) return;
+    
     setSaving(true);
-    await fetch(`/api/contacts/${contact_id}`, {
-      method: "PATCH",
-      headers: { "Content_Type": "application_json" },
-      body: JSON.stringify(form)
-    });
-    setSaving(false);
+    try {
+      const res = await fetch(`/api/contacts/${contact_id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form)
+      });
+      
+      if (!res.ok) {
+        throw new Error("Failed to save");
+      }
+      
+      const json = await res.json();
+      setContact(json.contact || json);
+    } catch (err) {
+      console.error("Failed to save contact:", err);
+      alert("Failed to save contact. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (!contact) return <div>Loading contact profile</div>;
