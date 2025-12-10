@@ -3,25 +3,39 @@ import { supabaseServer as supabase } from "@/lib/supabaseServer";
 import { getTenantId } from "@/lib/getTenantId";
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const clientId = searchParams.get("client_id");
-  
   try {
+    const searchParams = request.nextUrl.searchParams;
+    const clientId = searchParams.get("client_id");
     const tenantId = getTenantId(request);
 
-    // Build query - make clients join optional to avoid breaking if FK not set up
+    if (!tenantId) {
+      return NextResponse.json(
+        { error: "Tenant ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Build query with proper joins to clients and contacts tables
     let query = supabase
       .from("projects")
       .select(`
         id,
         name,
-        tenant_id,
+        project_key,
+        status,
+        project_type,
         created_at,
-        updated_at,
-        cms,
-        domain,
-        cms_url,
-        client_id
+        client:clients (
+          id,
+          client_name
+        ),
+        primary_contact:contacts (
+          id,
+          first_name,
+          last_name,
+          email,
+          phone
+        )
       `)
       .eq("tenant_id", tenantId);
 
@@ -40,28 +54,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // If we have projects with client_id, fetch client names separately
-    const clientIds = (projects || [])
-      .map((p: any) => p.client_id)
-      .filter((id: any) => id) as string[];
-    
-    const clientMap = new Map<string, string>();
-    if (clientIds.length > 0) {
-      try {
-        const { data: clients } = await supabase
-          .from("clients")
-          .select("id, name")
-          .in("id", clientIds);
-        
-        (clients || []).forEach((c: any) => {
-          clientMap.set(c.id, c.name);
-        });
-      } catch (err) {
-        console.warn("Could not fetch client names:", err);
-        // Continue without client names
-      }
-    }
-
+    // Map CMS types to icons
     const cmsMap: Record<string, string> = {
       wordpress: "/icon-wordpress.png",
       shopify: "/icon-shopify.png",
@@ -72,33 +65,49 @@ export async function GET(request: NextRequest) {
     // Enrich projects with formatted data for frontend
     const enriched = (projects || []).map((p: any) => {
       const cmsKey = (p.cms || "").toLowerCase();
-      const clientName = p.client_id ? clientMap.get(p.client_id) : null;
       
-      // Format lastUpdate from updated_at or created_at
-      const lastUpdate = p.updated_at 
-        ? new Date(p.updated_at).toLocaleDateString()
-        : p.created_at 
+      // Extract client info (handle both array and object formats from Supabase join)
+      const client = Array.isArray(p.client) ? p.client[0] : p.client;
+      const clientName = client?.client_name || null;
+      
+      // Extract primary contact info (handle both array and object formats)
+      const primaryContact = Array.isArray(p.primary_contact) 
+        ? p.primary_contact[0] 
+        : p.primary_contact;
+      
+      // Format lastUpdate from created_at
+      const lastUpdate = p.created_at 
         ? new Date(p.created_at).toLocaleDateString()
         : "";
 
       return {
         id: p.id,
         name: p.name,
-        domain: p.domain || null,
-        client: clientName || null,
-        status: "active", // Default status - can be enhanced later
+        project_key: p.project_key || null,
+        status: p.status || "active",
+        project_type: p.project_type || null,
+        domain: null, // Not in new schema, set to null
+        client: clientName,
         cms: p.cms || null,
         cmsType: p.cms || null,
         cms_icon: cmsMap[cmsKey] || "/icon-generic.png",
-        lastUpdate: lastUpdate
+        lastUpdate: lastUpdate,
+        // Include primary contact info if available
+        primary_contact: primaryContact ? {
+          id: primaryContact.id,
+          first_name: primaryContact.first_name || null,
+          last_name: primaryContact.last_name || null,
+          email: primaryContact.email || null,
+          phone: primaryContact.phone || null
+        } : null
       };
     });
 
     return NextResponse.json({ projects: enriched }, { status: 200 });
   } catch (err: any) {
-    console.error("Unexpected error in GET /api/projects:", err);
+    console.error("API route error", err);
     return NextResponse.json(
-      { error: "Unexpected server error", details: String(err) },
+      { error: err.message || "Unexpected server error" },
       { status: 500 }
     );
   }
