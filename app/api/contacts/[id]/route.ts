@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
-
-const DEFAULT_TENANT_ID = process.env.DEFAULT_TENANT_ID || "00000000-0000-0000-0000-000000000000";
+import { getTenantId } from "@/lib/getTenantId";
 
 export async function GET(
   request: NextRequest,
@@ -9,7 +8,7 @@ export async function GET(
 ) {
   try {
     const { id } = await context.params;
-    const tenantId = DEFAULT_TENANT_ID; // TODO: Get from session/auth
+    const tenantId = getTenantId(request);
 
     const { data, error } = await supabaseServer
       .from("contacts")
@@ -48,7 +47,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await context.params;
-    const tenantId = DEFAULT_TENANT_ID; // TODO: Get from session/auth
+    const tenantId = getTenantId(request);
     const body = await request.json();
 
     // If setting as primary, unset other primary contacts for the same client
@@ -114,7 +113,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await context.params;
-    const tenantId = DEFAULT_TENANT_ID; // TODO: Get from session/auth
+    const tenantId = getTenantId(request);
 
     const { error } = await supabaseServer
       .from("contacts")

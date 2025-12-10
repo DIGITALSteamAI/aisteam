@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
-
-const DEFAULT_TENANT_ID = process.env.DEFAULT_TENANT_ID || "00000000-0000-0000-0000-000000000000";
+import { getTenantId } from "@/lib/getTenantId";
 
 export async function POST(request: NextRequest) {
   try {
-    const tenantId = DEFAULT_TENANT_ID; // TODO: Get from session/auth
+    const tenantId = getTenantId(request);
     const body = await request.json();
 
     const { client_id, first_name, last_name, email, phone, role, is_primary } = body;
