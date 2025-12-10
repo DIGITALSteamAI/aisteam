@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Build query with proper joins to clients and contacts tables
+    // Fetch projects first (without joins to avoid syntax issues)
     let query = supabase
       .from("projects")
       .select(`
@@ -25,17 +25,9 @@ export async function GET(request: NextRequest) {
         status,
         project_type,
         created_at,
-        client:clients (
-          id,
-          client_name
-        ),
-        primary_contact:contacts (
-          id,
-          first_name,
-          last_name,
-          email,
-          phone
-        )
+        client_id,
+        primary_contact_id,
+        cms
       `)
       .eq("tenant_id", tenantId);
 
@@ -54,6 +46,56 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    if (!projects || projects.length === 0) {
+      return NextResponse.json({ projects: [] }, { status: 200 });
+    }
+
+    // Fetch clients separately
+    const clientIds = projects
+      .map((p: any) => p.client_id)
+      .filter((id: any) => id) as string[];
+    
+    const clientMap = new Map<string, any>();
+    if (clientIds.length > 0) {
+      try {
+        const { data: clients } = await supabase
+          .from("clients")
+          .select("id, client_name")
+          .in("id", clientIds)
+          .eq("tenant_id", tenantId);
+        
+        (clients || []).forEach((c: any) => {
+          clientMap.set(c.id, c);
+        });
+      } catch (err) {
+        console.warn("Could not fetch client names:", err);
+        // Continue without client names
+      }
+    }
+
+    // Fetch contacts separately
+    const contactIds = projects
+      .map((p: any) => p.primary_contact_id)
+      .filter((id: any) => id) as string[];
+    
+    const contactMap = new Map<string, any>();
+    if (contactIds.length > 0) {
+      try {
+        const { data: contacts } = await supabase
+          .from("contacts")
+          .select("id, first_name, last_name, email, phone")
+          .in("id", contactIds)
+          .eq("tenant_id", tenantId);
+        
+        (contacts || []).forEach((c: any) => {
+          contactMap.set(c.id, c);
+        });
+      } catch (err) {
+        console.warn("Could not fetch contact info:", err);
+        // Continue without contact info
+      }
+    }
+
     // Map CMS types to icons
     const cmsMap: Record<string, string> = {
       wordpress: "/icon-wordpress.png",
@@ -63,17 +105,10 @@ export async function GET(request: NextRequest) {
     };
 
     // Enrich projects with formatted data for frontend
-    const enriched = (projects || []).map((p: any) => {
+    const enriched = projects.map((p: any) => {
       const cmsKey = (p.cms || "").toLowerCase();
-      
-      // Extract client info (handle both array and object formats from Supabase join)
-      const client = Array.isArray(p.client) ? p.client[0] : p.client;
-      const clientName = client?.client_name || null;
-      
-      // Extract primary contact info (handle both array and object formats)
-      const primaryContact = Array.isArray(p.primary_contact) 
-        ? p.primary_contact[0] 
-        : p.primary_contact;
+      const client = p.client_id ? clientMap.get(p.client_id) : null;
+      const primaryContact = p.primary_contact_id ? contactMap.get(p.primary_contact_id) : null;
       
       // Format lastUpdate from created_at
       const lastUpdate = p.created_at 
@@ -87,7 +122,7 @@ export async function GET(request: NextRequest) {
         status: p.status || "active",
         project_type: p.project_type || null,
         domain: null, // Not in new schema, set to null
-        client: clientName,
+        client: client?.client_name || null,
         cms: p.cms || null,
         cmsType: p.cms || null,
         cms_icon: cmsMap[cmsKey] || "/icon-generic.png",

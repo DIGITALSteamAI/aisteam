@@ -24,25 +24,71 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Build insert object - only include fields that exist in the table
+    const insertData: any = {
+      tenant_id: tenantId,
+      user_id: userId,
+      active_flag: true,
+      current_agent: currentAgent || "chief",
+    };
+
+    // Only add optional fields if they are provided and not null
+    if (metadata !== undefined && metadata !== null) {
+      insertData.metadata = metadata;
+    }
+    
+    // Only add client_id and project_id if they exist in the table schema
+    // Check if these columns exist before adding them
+    if (clientId) {
+      insertData.client_id = clientId;
+    }
+    
+    if (projectId) {
+      insertData.project_id = projectId;
+    }
+
     // Create conversation without requiring client_id or project_id
-    // These are optional and can be null
     const { data: newSession, error } = await supabase
       .from("assistant_conversations")
-      .insert({
-        tenant_id: tenantId,
-        user_id: userId,
-        active_flag: true,
-        metadata: metadata || null,
-        current_agent: currentAgent || "chief",
-        // Optional fields - set to null if not provided
-        client_id: clientId || null,
-        project_id: projectId || null,
-      })
+      .insert(insertData)
       .select()
       .single();
 
     if (error) {
       console.error("Assistant conversation creation error", error);
+      // If error is about missing columns, try without them
+      if (error.message?.includes("column") && (clientId || projectId)) {
+        console.warn("Retrying without client_id/project_id columns");
+        const retryData: any = {
+          tenant_id: tenantId,
+          user_id: userId,
+          active_flag: true,
+          current_agent: currentAgent || "chief",
+        };
+        if (metadata !== undefined && metadata !== null) {
+          retryData.metadata = metadata;
+        }
+        
+        const { data: retrySession, error: retryError } = await supabase
+          .from("assistant_conversations")
+          .insert(retryData)
+          .select()
+          .single();
+        
+        if (retryError) {
+          return NextResponse.json(
+            { error: "Failed to create conversation", details: retryError.message },
+            { status: 500 }
+          );
+        }
+        
+        return NextResponse.json({ 
+          ok: true, 
+          sessionId: retrySession.id,
+          conversation: retrySession 
+        }, { status: 201 });
+      }
+      
       return NextResponse.json(
         { error: "Failed to create conversation", details: error.message },
         { status: 500 }
